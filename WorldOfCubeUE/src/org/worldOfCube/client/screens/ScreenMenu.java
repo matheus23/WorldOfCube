@@ -2,23 +2,28 @@ package org.worldOfCube.client.screens;
 
 import org.universeengine.display.UniDisplay;
 import org.worldOfCube.client.ClientMain;
+import org.worldOfCube.client.logic.collision.Rectangle;
 import org.worldOfCube.client.res.ResLoader;
-import org.worldOfCube.client.res.Sprite;
 import org.worldOfCube.client.screens.gui.BoxLabel;
 import org.worldOfCube.client.screens.gui.BoxLabelListener;
+import org.worldOfCube.client.screens.gui.ZoomEffect;
 
 public class ScreenMenu extends Screen implements BoxLabelListener {
 	
-	private Sprite titlescreen;
-	
 	private BoxLabel buttonWorlds;
 	private BoxLabel buttonExit;
+	
+	private ZoomEffect zoomBG;
 	
 	public ScreenMenu(UniDisplay display, ClientMain mep) {
 		super(display, mep, 0f, 0f, 0f, 0f);
 		
 		ResLoader.loadTitle();
-		titlescreen = ResLoader.get(ResLoader.GUI_BIG_TITLE_SCREEN, 0);
+		zoomBG = new ZoomEffect(ResLoader.tsBackground, 2f,
+				new Rectangle(1326, 976, 610, 2148),
+				new Rectangle(382, 814, 200, 200),
+				new Rectangle(0, 3440, 388, 360),
+				new Rectangle(330, 2700, 358, 272));
 		
 		buttonWorlds = new BoxLabel("Worlds", this);
 		buttonWorlds.withInfoText("See available Worlds.");
@@ -35,12 +40,13 @@ public class ScreenMenu extends Screen implements BoxLabelListener {
 	}
 	
 	public void tick() {
+		zoomBG.tick(getDelta());
 		buttonWorlds.tick(display);
 		buttonExit.tick(display);
 	}
 	
 	public void render() {
-		titlescreen.bindAndRender(0, 0, display.getWidth(), display.getHeight());
+		zoomBG.render(display);
 		buttonWorlds.render();
 		buttonExit.render();
 		buttonWorlds.renderTwo();

@@ -1,6 +1,8 @@
 package org.worldOfCube.client.res;
 
+import static org.lwjgl.opengl.ARBTextureRectangle.GL_TEXTURE_RECTANGLE_ARB;
 import static org.lwjgl.opengl.GL11.GL_LINEAR;
+import static org.lwjgl.opengl.GL11.GL_NEAREST;
 import static org.lwjgl.opengl.GL11.GL_REPEAT;
 import static org.lwjgl.opengl.GL11.GL_RGBA;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
@@ -51,9 +53,6 @@ public final class ResLoader {
 	public static final int GUI_INV_SLOT = 		40;
 	
 	public static final int PLAYER_SHEET = 		48;
-	
-	public static final int GUI_TITLE_SCREEN = 	62;
-	public static final int GUI_BIG_TITLE_SCREEN = 63;
 	
 	/*
 	 * Sprite ID's:
@@ -111,6 +110,8 @@ public final class ResLoader {
 	private static BlockVAO[] blocks = new BlockVAO[NUM_BLOCK_TYPES];
 	
 	public static UniTexture guiBackground;
+	// Titlescreen-Background
+	public static UniTexture tsBackground;
 	
 	public static void load() {
 		Log.out(ResLoader.class, "Using texture rect = " + StateManager.isUsingTexRect());
@@ -161,19 +162,12 @@ public final class ResLoader {
 	}
 	
 	public static void loadTitle() {
-		sheets[GUI_TITLE_SCREEN] = new SpriteSheet("res/titlescreen.png", 1, StateManager.isUsingTexRect());
-		sheets[GUI_TITLE_SCREEN].giveSprite(0, 0, 0, 800, 600);
-		sheets[GUI_BIG_TITLE_SCREEN] = new SpriteSheet("res/WorldOfCubeTitlescreen.png", 1, false);
-		sheets[GUI_BIG_TITLE_SCREEN].giveSprite(0, 0, 0, 
-				sheets[GUI_BIG_TITLE_SCREEN].getTexture().getWidth(), 
-				sheets[GUI_BIG_TITLE_SCREEN].getTexture().getHeight());
+		tsBackground = loadTex("res/WorldOfCubeTitlescreen.png", false);
 	}
 	
 	public static void unloadTitle() {
-		sheets[GUI_TITLE_SCREEN].delete();
-		sheets[GUI_TITLE_SCREEN] = null;
-		sheets[GUI_BIG_TITLE_SCREEN].delete();
-		sheets[GUI_BIG_TITLE_SCREEN] = null;
+		tsBackground.delete();
+		tsBackground = null;
 	}
 	
 	public static void unload() {
@@ -241,6 +235,28 @@ public final class ResLoader {
 		sheet.giveSprite(GUI_LOADBAR_LEFT, 0, 0, 4, 8);
 		sheet.giveSprite(GUI_LOADBAR_MID, 4, 0, 8, 8);
 		sheet.giveSprite(GUI_LOADBAR_RIGHT, 12, 0, 4, 8);
+	}
+	
+	public static UniTexture loadTex(String loadpath, boolean texRect) {
+		DecodePack pack = UniTextureLoader.loadImageBufferPNG(
+				Thread.currentThread().getContextClassLoader().getResourceAsStream(loadpath));
+		
+		glEnable(GL_TEXTURE_2D);
+		int id = glGenTextures();
+		glBindTexture(texRect ? GL_TEXTURE_RECTANGLE_ARB : GL_TEXTURE_2D, id);
+		if (texRect) {
+			glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		} else {
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		}
+		glTexImage2D(texRect ? GL_TEXTURE_RECTANGLE_ARB : GL_TEXTURE_2D, 0, GL_RGBA, 
+				pack.width, pack.height, 
+				0, GL_RGBA, GL_UNSIGNED_BYTE, pack.data);
+		glBindTexture(texRect ? GL_TEXTURE_RECTANGLE_ARB : GL_TEXTURE_2D, 0);
+		
+		return new UniTexture(id, pack.width, pack.height);
 	}
 	
 	public static Sprite get(int spritesheet, int sprite) {

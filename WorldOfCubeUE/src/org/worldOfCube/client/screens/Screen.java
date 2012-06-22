@@ -2,6 +2,7 @@ package org.worldOfCube.client.screens;
 
 import static org.lwjgl.opengl.GL11.*;
 
+import org.lwjgl.Sys;
 import org.universeengine.display.UniDisplay;
 import org.universeengine.util.input.UniInputListener;
 import org.worldOfCube.client.ClientMain;
@@ -16,6 +17,7 @@ public abstract class Screen implements UniInputListener {
 	protected float green;
 	protected float blue;
 	protected float alpha;
+	private long lastTime;
 	
 	public Screen(UniDisplay display, ClientMain mep, float red, float green, float blue, float alpha) {
 		this.display = display;
@@ -25,6 +27,7 @@ public abstract class Screen implements UniInputListener {
 		this.blue = blue;
 		this.alpha = alpha;
 		display.setCaption("WorldOfCube - " + getCaption());
+		lastTime = Sys.getTime();
 	}
 	
 	public abstract void tick();
@@ -71,6 +74,13 @@ public abstract class Screen implements UniInputListener {
 		}
 		glEnd();
 		StateManager.useTexRect(save);
+	}
+	
+	public double getDelta() {
+		long time = Sys.getTime();
+		double delta = (double) (time - lastTime) / Sys.getTimerResolution();
+		lastTime = time;
+		return delta;
 	}
 	
 }

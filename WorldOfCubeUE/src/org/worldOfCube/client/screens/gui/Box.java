@@ -33,6 +33,7 @@ public class Box implements GUIElement {
 	private float color = COLOR_S_NONE;
 	private float alpha = 1f;
 	private int borderSpriteSheet;
+	private boolean pressedMB;
 	
 	public Box(int x, int y, int w, int h, int borderSpriteSheetID) {
 		set(x, y, w, h);
@@ -109,13 +110,18 @@ public class Box implements GUIElement {
 		int my = display.getHeight()-Mouse.getY();
 		if (rect.contains(mx, my)) {
 			state = STATE_HOVER;
-			if (Mouse.isButtonDown(0)) {
+			if (Mouse.isButtonDown(0) && !pressedMB) {
 				state = STATE_CLICKED;
 			}
 			recalcColor();
 		} else {
 			state = STATE_NONE;
 			recalcColor();
+		}
+		if (Mouse.isButtonDown(0) && !pressedMB) {
+			pressedMB = true;
+		} else if (!Mouse.isButtonDown(0) && pressedMB) {
+			pressedMB = false;
 		}
 	}
 	

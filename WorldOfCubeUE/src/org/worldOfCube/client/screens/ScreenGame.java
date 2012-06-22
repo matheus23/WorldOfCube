@@ -1,6 +1,5 @@
 package org.worldOfCube.client.screens;
 
-import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
 import org.universeengine.display.UniDisplay;
@@ -14,13 +13,11 @@ import org.worldOfCube.client.util.debug.PerfMonitor;
 public class ScreenGame extends Screen {
 
 	private World world;
-	private long lastTime;
 	private double lastDelta;
 
 	public ScreenGame(UniDisplay display, ClientMain mep, String name) {
 		super(display, mep, ClientMain.BG_R, ClientMain.BG_G, ClientMain.BG_B, 0f);
 		world = new World(display, 32, 64, name);
-		lastTime = Sys.getTime();
 	}
 
 	public ScreenGame(UniDisplay display, ClientMain mep, World world) {
@@ -66,13 +63,6 @@ public class ScreenGame extends Screen {
 	}
 
 	public void screenRemove() {
-	}
-	
-	public double getDelta() {
-		long time = Sys.getTime();
-		double delta = (double) (time - lastTime) / Sys.getTimerResolution();
-		lastTime = time;
-		return delta;
 	}
 	
 	public String getCaption() {

@@ -69,7 +69,7 @@ public class LittleTreeGenerator implements TreeGenerator {
 	}
 	
 	public double deriveDistance(double predist) {
-		return predist / (1.0+(rand.nextDouble()/2.0));
+		return predist / (1.0+(rand.nextDouble()/8.0));
 	}
 	
 	public void build(TreeLog tl, Random rand) {
