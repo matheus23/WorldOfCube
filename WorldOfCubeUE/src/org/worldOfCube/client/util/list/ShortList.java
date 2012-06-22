@@ -1,0 +1,101 @@
+package org.worldOfCube.client.util.list;
+
+import java.util.Arrays;
+
+public class ShortList {
+	
+	private short[] data;
+	private int size;
+	
+	public ShortList(int initialCapacity) {
+		if (initialCapacity < 0) {
+			throw new IllegalArgumentException("IllegalCapacity: " + initialCapacity);
+		}
+		data = new short[initialCapacity];
+	}
+	
+	public ShortList() {
+		this(10);
+	}
+	
+	public void ensureCapacity(int minCapacity) {
+		int oldCapacity = data.length;
+		if (minCapacity > oldCapacity) {
+			int newCapacity = (oldCapacity * 3)/2 + 1;
+			if (newCapacity < minCapacity) 
+				newCapacity = minCapacity;
+			data = Arrays.copyOf(data, newCapacity);
+		}
+	}
+	
+	public boolean contains(short s) {
+		return indexOf(s) >= 0;
+	}
+	
+	public void set(int index, short s) {
+		rangeCheck(index);
+		data[index] = s;
+	}
+	
+	public void add(short s) {
+		ensureCapacity(size + 1);
+		data[size++] = s;
+	}
+	
+	public boolean remove(short s) {
+		return remove(indexOf(s));
+	}
+	
+	public boolean remove(int index) {
+		if (index >= 0) {
+			rangeCheck(index);
+			int numMoved = size - index - 1;
+			if (numMoved > 0) {
+				System.arraycopy(data, index+1, data, index, numMoved);
+			}
+			return true;
+		}
+		return false;
+	}
+	
+	public int indexOf(short s) {
+		for (int i = 0; i < size; i++) {
+			if (data[i] == s) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	
+	public short get(int index) {
+		rangeCheck(index);
+		return data[index];
+	}
+	
+	public void rangeCheck(int index) {
+		if (index >= size || index < 0) {
+			throw new IndexOutOfBoundsException("Index: " + index);
+		}
+	}
+	
+	public int capacity() {
+		return data.length;
+	}
+	
+	public int size() {
+		return size;
+	}
+	
+	public short[] toArray() {
+		return Arrays.copyOf(data, size); 
+	}
+	
+	public String toString() {
+		StringBuilder sb = new StringBuilder("ShortList (size: " + size + ", capacity: " + capacity() + ") data: ");
+		for (int i = 0; i < size; i++) {
+			sb.append(" [" + data[i] + "]");
+		}
+		return sb.toString();
+	}
+	
+}
