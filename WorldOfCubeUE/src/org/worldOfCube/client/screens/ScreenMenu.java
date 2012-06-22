@@ -19,7 +19,7 @@ public class ScreenMenu extends Screen implements BoxLabelListener {
 		super(display, mep, 0f, 0f, 0f, 0f);
 		
 		ResLoader.loadTitle();
-		zoomBG = new ZoomEffect(ResLoader.tsBackground, 2f,
+		zoomBG = new ZoomEffect(ResLoader.tsBackground, 3f,
 				new Rectangle(1326, 976, 610, 2148),
 				new Rectangle(382, 814, 200, 200),
 				new Rectangle(0, 3440, 388, 360),

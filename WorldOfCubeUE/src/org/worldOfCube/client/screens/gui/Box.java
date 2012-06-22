@@ -34,6 +34,7 @@ public class Box implements GUIElement {
 	private float alpha = 1f;
 	private int borderSpriteSheet;
 	private boolean pressedMB;
+	private boolean ignoreClick;
 	
 	public Box(int x, int y, int w, int h, int borderSpriteSheetID) {
 		set(x, y, w, h);
@@ -108,20 +109,25 @@ public class Box implements GUIElement {
 	public void tick(UniDisplay display) {
 		int mx = Mouse.getX();
 		int my = display.getHeight()-Mouse.getY();
-		if (rect.contains(mx, my)) {
+		boolean containsClick = rect.contains(mx, my);
+		if (Mouse.isButtonDown(0) && !pressedMB) {
+			pressedMB = true;
+			if (!containsClick) {
+				ignoreClick = true;
+			}
+		} else if (!Mouse.isButtonDown(0) && pressedMB) {
+			pressedMB = false;
+			ignoreClick = false;
+		}
+		if (containsClick) {
 			state = STATE_HOVER;
-			if (Mouse.isButtonDown(0) && !pressedMB) {
+			if (!ignoreClick && Mouse.isButtonDown(0)) {
 				state = STATE_CLICKED;
 			}
 			recalcColor();
 		} else {
 			state = STATE_NONE;
 			recalcColor();
-		}
-		if (Mouse.isButtonDown(0) && !pressedMB) {
-			pressedMB = true;
-		} else if (!Mouse.isButtonDown(0) && pressedMB) {
-			pressedMB = false;
 		}
 	}
 	

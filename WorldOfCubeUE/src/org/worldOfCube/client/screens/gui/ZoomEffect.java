@@ -8,6 +8,7 @@ import static org.lwjgl.opengl.GL11.glVertex2f;
 
 import java.util.Random;
 
+import org.lwjgl.input.Mouse;
 import org.universeengine.display.UniDisplay;
 import org.universeengine.opengl.texture.UniTexture;
 import org.worldOfCube.client.logic.collision.Rectangle;
@@ -137,10 +138,12 @@ public class ZoomEffect {
 		if (dy != 0) yvel = Math.min(10f, dy);
 		xoff += xvel;
 		yoff += yvel;
-		xvel /= 1.2f;
-		yvel /= 1.2f;
-		xoff /= 1.05f;
-		yoff /= 1.05f;
+		if (!Mouse.isButtonDown(0)) {
+			xvel /= 1.2f;
+			xoff /= 1.05f;
+			yvel /= 1.2f;
+			yoff /= 1.05f;
+		}
 		
 		if (interpol.finished()) {
 			zoom1 = zoom2;
@@ -155,7 +158,7 @@ public class ZoomEffect {
 			interpol = new ZoomInterpolation(DEFAULT_TIME, zoom1, zoom2);
 		}
 		interpol.get().move(xoff, yoff).toTexCoords(zoomTex.getWidth(), zoomTex.getHeight(), render);
-		interpol.tick(delta);
+		interpol.tick(Mouse.isButtonDown(0) ? 0.0 : delta);
 	}
 	
 	public void render(UniDisplay display) {
