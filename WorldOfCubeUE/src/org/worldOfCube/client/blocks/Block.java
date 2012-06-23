@@ -129,7 +129,7 @@ public abstract class Block {
 	 * (Backgroundblock's standard: 0.2 * 0.01);
 	 */
 	public float getLightWallness() {
-		return foreground ? 8f : 0.5f;
+		return foreground ? 8f :0f;
 	}
 	
 	/**

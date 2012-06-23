@@ -229,10 +229,12 @@ public class LightUpdater {
 	 */
 	private void recursiveLight(int x, int y, int midx, int midy, float walls, float lastLight, RenderedLight light) {
 		if (!cManager.isValidPosition(x, y)) return;
-		Block fg = cManager.getBlock(x, y, true);
-		Block bg = cManager.getBlock(x, y, false);
-		if (fg != null) walls += fg.getLightWallness();
-		if (bg != null) walls += bg.getLightWallness();
+		if (x != midx || y != midy) {
+			Block fg = cManager.getBlock(x, y, true);
+			Block bg = cManager.getBlock(x, y, false);
+			if (fg != null) walls += fg.getLightWallness();
+			if (bg != null) walls += bg.getLightWallness();
+		}
 		
 		float newLight = light.getMidRelative(midx-x, midy-y)-(walls*0.01f);
 		

@@ -14,7 +14,7 @@ public class Fonts {
 					Font.createFont(
 							Font.PLAIN, 
 							Thread.currentThread().getContextClassLoader()
-							.getResourceAsStream("res/fonts/DejaVuSansMono.ttf"))
+							.getResourceAsStream(ResLoader.res + "fonts/DejaVuSansMono.ttf"))
 					.deriveFont(14f);
 		} catch (FontFormatException e) {
 			e.printStackTrace();

@@ -19,7 +19,6 @@ import org.universeengine.display.UniDisplay;
 import org.worldOfCube.Log;
 import org.worldOfCube.client.ClientMain;
 import org.worldOfCube.client.blocks.Block;
-import org.worldOfCube.client.input.InputManager;
 import org.worldOfCube.client.input.WrappedMouse;
 import org.worldOfCube.client.logic.chunks.generation.Generator;
 import org.worldOfCube.client.logic.chunks.light.LightUpdater;
@@ -27,6 +26,8 @@ import org.worldOfCube.client.logic.collision.Rectangle;
 import org.worldOfCube.client.logic.entity.Entity;
 import org.worldOfCube.client.logic.entity.EntityPlayer;
 import org.worldOfCube.client.logic.inventory.Inventory;
+import org.worldOfCube.client.logic.inventory.Item;
+import org.worldOfCube.client.logic.inventory.ItemStack;
 import org.worldOfCube.client.res.GLFont;
 import org.worldOfCube.client.res.ResLoader;
 import org.worldOfCube.client.util.Config;
@@ -95,6 +96,7 @@ public class World {
 		loadType = 3;
 		g.generateTrees();
 		postGen(new EntityPlayer(totalPix/2, 48f, this, true));
+		inv.store(new ItemStack(new Item(Item.LIGHTSTONE), 500));
 		Log.out(this, "World Generation finished (" + (System.currentTimeMillis()-time) + " ms).");
 	}
 	
@@ -111,10 +113,6 @@ public class World {
 	}
 
 	public void tick(double d) {
-		if (InputManager.down("regen")) {
-			generate(cManager.size, cManager.csize);
-		}
-		
 		PerfMonitor.startProfile("ENTITY TICK");
 		for (int i = 0; i < entitys.size(); i++) {
 			entitys.get(i).tick(d);

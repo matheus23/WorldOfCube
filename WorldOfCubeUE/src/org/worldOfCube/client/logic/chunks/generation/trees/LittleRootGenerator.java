@@ -49,9 +49,9 @@ public class LittleRootGenerator implements TreeGenerator {
 	public double deriveRotation(double prerot) {
 		return prerot + (rand.nextBoolean() ? -(rand.nextDouble()*20.0+20.0) : rand.nextDouble()*20.0+20.0);
 	}
-	
+
 	public double deriveDistance(double predist) {
-		return predist / (1.0+(rand.nextDouble()/8.0));
+		return predist / (1.0+(rand.nextDouble()/4.0));
 	}
 	
 	public void build(TreeLog tl, Random rand) {

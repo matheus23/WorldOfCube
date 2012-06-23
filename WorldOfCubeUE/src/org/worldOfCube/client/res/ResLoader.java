@@ -35,7 +35,7 @@ import org.worldOfCube.client.util.opengl.BlockVAO;
 
 public final class ResLoader {
 	
-	private static final String res = "org/worldOfCube/client/resources/";
+	public static final String res = "org/worldOfCube/client/resources/";
 	
 	/*
 	 * SpriteSheet ID's:
@@ -152,7 +152,17 @@ public final class ResLoader {
 		splitUpGUIInvSlots(sheets[GUI_INV_SLOT]);
 		
 		glEnable(GL_TEXTURE_2D);
-		DecodePack pack = UniTextureLoader.loadImageBufferPNG(Thread.currentThread().getContextClassLoader().getResourceAsStream("res/gui/backgroundtile.png"));
+		String loadpath = res + "gui/backgroundtile.png";
+		InputStream stream = Thread.currentThread().getContextClassLoader().getResourceAsStream(loadpath);
+		try {
+			if (stream == null || stream.available() == 0) {
+				Log.err(ResLoader.class, "Could not open InputStream from " + loadpath);
+			}
+		} catch (IOException e) {
+			Log.err(ResLoader.class, "Could not open InputStream from " + loadpath);
+			e.printStackTrace();
+		}
+		DecodePack pack = UniTextureLoader.loadImageBufferPNG(stream);
 		int id = glGenTextures();
 		glBindTexture(GL_TEXTURE_2D, id);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);

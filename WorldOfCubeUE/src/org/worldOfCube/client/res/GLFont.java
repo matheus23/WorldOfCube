@@ -14,7 +14,7 @@ public class GLFont {
 	private static HashMap<Character, Sprite> chars = new HashMap<Character, Sprite>();
 	
 	public static void load() {
-		SpriteSheet img = new SpriteSheet("res/fonts/font.png", 95, StateManager.isUsingTexRect());
+		SpriteSheet img = new SpriteSheet(ResLoader.res + "fonts/font.png", 95, StateManager.isUsingTexRect());
 		int i = 0;
 		chars.put('a', img.giveSprite(i++,   0,  0, SIZE, SIZE));
 		chars.put('b', img.giveSprite(i++,  10,  0, SIZE, SIZE));

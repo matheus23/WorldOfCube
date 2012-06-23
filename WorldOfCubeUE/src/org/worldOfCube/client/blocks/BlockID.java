@@ -99,7 +99,7 @@ public final class BlockID {
 		if (b instanceof BlockEarth) {
 			return Item.EARTH;
 		} if (b instanceof BlockGrass) {
-			return Item.GRASS;
+			return Item.EARTH;
 		} if (b instanceof BlockRock) {
 			return Item.ROCK;
 		} if (b instanceof BlockLightstone) {

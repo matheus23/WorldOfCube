@@ -12,7 +12,7 @@ public class BlockLightstone extends Block implements LightSource {
 	private static final int BLOCK_TEX = ResLoader.BLOCK_LIGHTSTONE;
 	private static final Color awtCol = new Color(1f, 1f, 0.5f);
 	public static final RenderedLight light = new RenderedLight(16, 1f);
-
+	
 	public BlockLightstone(byte x, byte y, Chunk c, boolean foreground) {
 		super(x, y, c, foreground);
 		if (foreground) {
