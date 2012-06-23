@@ -22,6 +22,7 @@ import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.InputStream;
 
 import javax.imageio.ImageIO;
 
@@ -33,6 +34,8 @@ import org.worldOfCube.client.util.StateManager;
 import org.worldOfCube.client.util.opengl.BlockVAO;
 
 public final class ResLoader {
+	
+	private static final String res = "org/worldOfCube/client/resources/";
 	
 	/*
 	 * SpriteSheet ID's:
@@ -117,13 +120,13 @@ public final class ResLoader {
 		Log.out(ResLoader.class, "Using texture rect = " + StateManager.isUsingTexRect());
 		UniTextureLoader.flipImages = false;
 		//TODO: Blocks: Add to sheets, give sprites.
-		sheets[BLOCK_EARTH     ] = new SpriteSheet("res/blocks/blocksEarth.png",      	NUM_BLOCK_TYPES, StateManager.isUsingTexRect());
-		sheets[BLOCK_GRASS     ] = new SpriteSheet("res/blocks/blocksGrass.png",      	NUM_BLOCK_TYPES, StateManager.isUsingTexRect());
-		sheets[BLOCK_ROCK      ] = new SpriteSheet("res/blocks/blocksRock.png",       	NUM_BLOCK_TYPES, StateManager.isUsingTexRect());
-		sheets[BLOCK_LIGHTSTONE] = new SpriteSheet("res/blocks/blocksLightstone.png", 	NUM_BLOCK_TYPES, StateManager.isUsingTexRect());
-		sheets[BLOCK_TREEWOOD  ] = new SpriteSheet("res/blocks/blocksTreewood.png", 	NUM_BLOCK_TYPES, StateManager.isUsingTexRect());
-		sheets[BLOCK_LEAVES    ] = new SpriteSheet("res/blocks/blocksLeaves.png",       NUM_BLOCK_TYPES, StateManager.isUsingTexRect());
-		sheets[BLOCK_WOOD      ] = new SpriteSheet("res/blocks/blocksWood.png", 		NUM_BLOCK_TYPES, StateManager.isUsingTexRect());
+		sheets[BLOCK_EARTH     ] = new SpriteSheet(res + "blocks/blocksEarth.png",      NUM_BLOCK_TYPES, StateManager.isUsingTexRect());
+		sheets[BLOCK_GRASS     ] = new SpriteSheet(res + "blocks/blocksGrass.png",      NUM_BLOCK_TYPES, StateManager.isUsingTexRect());
+		sheets[BLOCK_ROCK      ] = new SpriteSheet(res + "blocks/blocksRock.png",       NUM_BLOCK_TYPES, StateManager.isUsingTexRect());
+		sheets[BLOCK_LIGHTSTONE] = new SpriteSheet(res + "blocks/blocksLightstone.png", NUM_BLOCK_TYPES, StateManager.isUsingTexRect());
+		sheets[BLOCK_TREEWOOD  ] = new SpriteSheet(res + "blocks/blocksTreewood.png", 	NUM_BLOCK_TYPES, StateManager.isUsingTexRect());
+		sheets[BLOCK_LEAVES    ] = new SpriteSheet(res + "blocks/blocksLeaves.png",     NUM_BLOCK_TYPES, StateManager.isUsingTexRect());
+		sheets[BLOCK_WOOD      ] = new SpriteSheet(res + "blocks/blocksWood.png", 		NUM_BLOCK_TYPES, StateManager.isUsingTexRect());
 		splitUp(sheets[BLOCK_EARTH     ]);
 		splitUp(sheets[BLOCK_GRASS     ]);
 		splitUp(sheets[BLOCK_ROCK      ]);
@@ -134,18 +137,18 @@ public final class ResLoader {
 		
 		loadBlockRenderers();
 		
-		sheets[PLAYER_SHEET] = new SpriteSheet("res/sprites/player/mike_ripped.png", 6, StateManager.isUsingTexRect());
+		sheets[PLAYER_SHEET] = new SpriteSheet(res + "sprites/player/mike_ripped.png", 6, StateManager.isUsingTexRect());
 		splitPlayerSprite(sheets[PLAYER_SHEET]);
 		
-		sheets[GUI_BORDER_BLUE] = new SpriteSheet("res/gui/border_blue.png", 9, StateManager.isUsingTexRect());
-		sheets[GUI_BORDER_NORMAL] = new SpriteSheet("res/gui/border_normal.png", 9, StateManager.isUsingTexRect());
+		sheets[GUI_BORDER_BLUE] = new SpriteSheet(res + "gui/border_blue.png", 9, StateManager.isUsingTexRect());
+		sheets[GUI_BORDER_NORMAL] = new SpriteSheet(res + "gui/border_normal.png", 9, StateManager.isUsingTexRect());
 		splitUpGUIBorder(sheets[GUI_BORDER_BLUE]);
 		splitUpGUIBorder(sheets[GUI_BORDER_NORMAL]);
 		
-		sheets[GUI_LOADBAR] = new SpriteSheet("res/gui/loadbar.png", 3, StateManager.isUsingTexRect());
+		sheets[GUI_LOADBAR] = new SpriteSheet(res + "gui/loadbar.png", 3, StateManager.isUsingTexRect());
 		splitUpGUILoadBar(sheets[GUI_LOADBAR]);
 		
-		sheets[GUI_INV_SLOT] = new SpriteSheet("res/gui/inv_tile.png", 2, StateManager.isUsingTexRect());
+		sheets[GUI_INV_SLOT] = new SpriteSheet(res + "gui/inv_tile.png", 2, StateManager.isUsingTexRect());
 		splitUpGUIInvSlots(sheets[GUI_INV_SLOT]);
 		
 		glEnable(GL_TEXTURE_2D);
@@ -162,7 +165,7 @@ public final class ResLoader {
 	}
 	
 	public static void loadTitle() {
-		tsBackground = loadTex("res/WorldOfCubeTitlescreen.png", false);
+		tsBackground = loadTex(res + "WorldOfCubeTitlescreen.png", false);
 	}
 	
 	public static void unloadTitle() {
@@ -238,8 +241,16 @@ public final class ResLoader {
 	}
 	
 	public static UniTexture loadTex(String loadpath, boolean texRect) {
-		DecodePack pack = UniTextureLoader.loadImageBufferPNG(
-				Thread.currentThread().getContextClassLoader().getResourceAsStream(loadpath));
+		InputStream stream = Thread.currentThread().getContextClassLoader().getResourceAsStream(loadpath);
+		try {
+			if (stream == null || stream.available() == 0) {
+				Log.err(ResLoader.class, "Could not open InputStream from " + loadpath);
+			}
+		} catch (IOException e) {
+			Log.err(ResLoader.class, "Could not open InputStream from " + loadpath);
+			e.printStackTrace();
+		}
+		DecodePack pack = UniTextureLoader.loadImageBufferPNG(stream);
 		
 		glEnable(GL_TEXTURE_2D);
 		int id = glGenTextures();
