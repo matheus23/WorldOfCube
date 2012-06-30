@@ -58,6 +58,13 @@ public class World {
 	public int treesToLoad = 1;
 	private MouseCursor mc;
 	
+	/**
+	 * Constructor.
+	 * Create a new world with a pre-given ChunkManager, and a name.
+	 * @param display a display instance for getting the size from, to wrap mouse inputs.
+	 * @param cm a ChunkManager, which was given before.
+	 * @param name a name for this world.
+	 */
 	public World(UniDisplay display, ChunkManager cm, String name) {
 		this.cManager = cm;
 		this.name = name;
@@ -69,10 +76,29 @@ public class World {
 		postGen(null);
 	}
 
+	/**
+	 * Constructor.
+	 * Only for pretty-ness. Calls the other constructor with
+	 * seed = current ms time, and gen = true.
+	 * @param display a display instance for getting the size from, to wrap mouse inputs.
+	 * @param size the size of chunks.
+	 * @param csize the size of blocks inside a chunk.
+	 * @param name the name for this world.
+	 */
 	public World(UniDisplay display, int size, int csize, String name) {
 		this(display, System.currentTimeMillis(), size, csize, name, true);
 	}
 	
+	/**
+	 * Creates a new world, and - if gen is true - generates blocks onto it,
+	 * with the given seed "seed".
+	 * @param display a display instance for getting the size from, to wrap mouse inputs.
+	 * @param seed a seed value, used to create 2 identical worlds.
+	 * @param size the size of chunks.
+	 * @param csize the size of blocks inside a chunk.
+	 * @param name the name for this world.
+	 * @param gen whether to generate the world or not.
+	 */
 	public World(UniDisplay display, long seed, int size, int csize, String name, boolean gen) {
 		this.display = display;
 		this.name = name;
@@ -87,6 +113,16 @@ public class World {
 		}
 	}
 	
+	/**
+	 * This is called by the Constructor. Used to generate blocks onto this world.
+	 * At first this creates a ChunkManager, where it also sets the size and
+	 * chunk size to. Then it begins the "real" world-generation, using a {@link org.worldOfCube.client.logic.chunks.generation.Generator}.
+	 * When the ChunkManager is finished with default block generation, it generates
+	 * the Trees ontop. then it calls {@link #postGen(EntityPlayer)} with a new
+	 * local PlayerEntity instance.
+	 * @param size the size of chunks.
+	 * @param csize the size of blocks on chunks.
+	 */
 	public void generate(int size, int csize) {
 		long time = System.currentTimeMillis();
 		Log.out(this, "Starting World Generation.");
@@ -100,6 +136,14 @@ public class World {
 		Log.out(this, "World Generation finished (" + (System.currentTimeMillis()-time) + " ms).");
 	}
 	
+	/**
+	 * Does after-world initializations. This should be always called.
+	 * "ep" may be null.
+	 * At first it updates every block from the ChunkManager, then 
+	 * adds "ep" to the {@link #entitys} list, and sets {@link #localPlayer}.
+	 * After that it initializes Lighting and the MouseCursor.
+	 * @param ep
+	 */
 	protected void postGen(EntityPlayer ep) {
 		cManager.updateAll();
 		entitys = new ArrayList<Entity>();
@@ -109,9 +153,14 @@ public class World {
 		light = new LightUpdater(cManager);
 		light.recalcLight();
 		bounds = new Rectangle(0, 0, totalPix, totalPix);
-		mc = new MouseCursor(this, light);
+		mc = new MouseCursor(this);
 	}
 
+	/**
+	 * The update-step, called every frame. This does only update things,
+	 * but does not render. It also updates world bounds.
+	 * @param d the delta time, passed since the last update. Usually gotten from {@link org.worldOfCube.client.screens.Screen#getDelta()}
+	 */
 	public void tick(double d) {
 		PerfMonitor.startProfile("ENTITY TICK");
 		for (int i = 0; i < entitys.size(); i++) {
@@ -129,39 +178,60 @@ public class World {
 		mc.tick(worldx, worldy, display.getWidth(), display.getHeight());
 		
 		light.tick((int)worldx, (int)worldy, display.getWidth(), display.getHeight());
-		light.update((int)worldx, (int)worldy, display.getWidth(), display.getHeight(), false);
 		
 		WrappedMouse.update();
 	}
 	
+	/**
+	 * Adds an Entity to the world. That Entity will then be updated and rendered.
+	 * @param e
+	 */
 	public void addEntity(Entity e) {
 		entitys.add(e);
 	}
 	
+	/**
+	 * Removes an Entity from the world. The entity will no longer be updated or
+	 * rendered. If no other reference to the entity is existing, that entity will be
+	 * gc'ed.
+	 * @param e
+	 */
 	public void removeEntity(Entity e) {
 		entitys.remove(e);
 	}
 	
 	public float getClearRed() {
-		return ClientMain.BG_R*LightUpdater.sunlight.getStrength();
+		return ClientMain.BG_R*light.getSunlight().getStrength();
 	}
 	
 	public float getClearGreen() {
-		return ClientMain.BG_G*LightUpdater.sunlight.getStrength();
+		return ClientMain.BG_G*light.getSunlight().getStrength();
 	}
 	
 	public float getClearBlue() {
-		return ClientMain.BG_B*LightUpdater.sunlight.getStrength();
+		return ClientMain.BG_B*light.getSunlight().getStrength();
 	}
 
+	/**
+	 * Transforms the current mouse coordinates from screen-space into world-space.
+	 * @return the current world-space mouse x position.
+	 */
 	public float getGameMouseX() {
 		return Mouse.getX() + worldx;
 	}
 
+	/**
+	 * Transforms the current mouse coordinates from screen-space into world-space.
+	 * @return the current world-space mouse y position.
+	 */	
 	public float getGameMouseY() {
 		return (display.getHeight() - Mouse.getY()) + worldy;
 	}
 	
+	/**
+	 * Renders the whole representation of the world. Only renders visible blocks,
+	 * chosen by the current viewport.
+	 */
 	public void render() {
 		glPushMatrix();
 		{
@@ -193,6 +263,10 @@ public class World {
 		inv.render();
 	}
 	
+	/**
+	 * @param rect the rect to check the collision with.
+	 * @return whether the rect is intersecting any block in the whole world.
+	 */
 	public boolean isFieldFree(Rectangle rect) {
 		int beginx = (int) (rect.x / ResLoader.BLOCK_SIZE);
 		int beginy = (int) (rect.y / ResLoader.BLOCK_SIZE);
@@ -215,9 +289,11 @@ public class World {
 		return true;
 	}
 	
+	@Deprecated
 	public void saveWorldImg() {
 		new WorldMapGenerator(this);
 	}
+	
 	
 	public ChunkManager getChunkManager() {
 		return cManager;

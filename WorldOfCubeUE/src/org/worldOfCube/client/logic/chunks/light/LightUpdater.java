@@ -81,13 +81,8 @@ public class LightUpdater {
 		}
 	}
 	
-	public static RenderedLight sunlight = new RenderedLight(8, 1f);
-	
+	private RenderedLight sunlight = new RenderedLight(8, 1f);
 	private ChunkManager cManager;
-	private int lastbeginx;
-	private int lastbeginy;
-	private int lastendx;
-	private int lastendy;
 	private UpdaterThread updater;
 	
 	/**
@@ -105,6 +100,14 @@ public class LightUpdater {
 	 */
 	public void setSunlight(float brightness) {
 		sunlight = new RenderedLight(8, Math.max(0f, brightness));
+	}
+	
+	/**
+	 * @return the current {@link org.worldOfCube.client.logic.chunks.light.RenderedLight}, used
+	 * as sunlight.
+	 */
+	public RenderedLight getSunlight() {
+		return sunlight;
 	}
 	
 	/**
@@ -129,29 +132,22 @@ public class LightUpdater {
 	public void tick(int wx, int wy, int ww, int wh) {
 		//TODO: remove.
 		Keyboard.poll();
-		boolean needupdate = false;
 		while (Keyboard.next()) {
 			char c = Keyboard.getEventCharacter();
 			if (c == '+') {
 				setSunlight(sunlight.getStrength()+0.05f);
-				needupdate = true;
 			} else if (c == '-') {
 				setSunlight(sunlight.getStrength()-0.05f);
-				needupdate = true;
 			} else if (c == '=') {
 				setSunlight(1f);
-				needupdate = true;
 			}
 		}
-		if (needupdate) {
-			update(wx, wy, ww, wh, true);
-		}
+		update(wx, wy, ww, wh);
 	}
 	
 	/**
-	 * If the field of view of chunks, or something changed in the world.
-	 * Then this method tells the Updater thread, that the current Light
-	 * representation is Dirty.
+	 * Updates the information about where to update the light on the
+	 * Lighting updater Thread. 
 	 * The whole Lighting system is double-buffered, to make Threaded 
 	 * Lighting look good. See the class Chunk for more information.
 	 * 
@@ -159,10 +155,9 @@ public class LightUpdater {
 	 * @param wy current pixel-space view y coordinate.
 	 * @param ww current viewport width in pixels.
 	 * @param wh current viewport height in pixels.
-	 * @param force when true, it does update, even when the view does not change.
 	 * @see org.worldOfCube.client.logic.chunks.Chunk
 	 */
-	public void update(int wx, int wy, int ww, int wh, boolean force) {
+	private void update(int wx, int wy, int ww, int wh) {
 		int beginx = wx/(cManager.csize*ResLoader.BLOCK_SIZE)-1;
 		int beginy = wy/(cManager.csize*ResLoader.BLOCK_SIZE)-1;
 		int endx = (wx+ww)/(cManager.csize*ResLoader.BLOCK_SIZE)+2;
@@ -171,17 +166,7 @@ public class LightUpdater {
 		beginy = Math.max(0, beginy);
 		endx = Math.min(cManager.size-1, endx);
 		endy = Math.min(cManager.size-1, endy);
-		if (force
-				|| beginx != lastbeginx
-				|| beginy != lastbeginy
-				|| endx != lastendx
-				|| endy != lastendy) {
-			updater.update(beginx, beginy, endx, endy);
-		}
-		lastbeginx = beginx;
-		lastbeginy = beginy;
-		lastendx = endx;
-		lastendy = endy;
+		updater.update(beginx, beginy, endx, endy);
 	}
 	
 	/**

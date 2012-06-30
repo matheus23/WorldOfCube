@@ -96,7 +96,7 @@ public class DisplayModeManager {
 		for (int j = 0; j < devices.length; j++) {
 			System.out.println("Awt-DisplayModes for GraphicsDevice (" + j + ")");
 			java.awt.DisplayMode[] awtModes = devices[j].getDisplayModes();
-			for (int i = 0; i < modes.length; i++) {
+			for (int i = 0; i < awtModes.length; i++) {
 				System.out.println("Found Awt-Display mode (" + i + "): w:" + awtModes[i].getWidth() + " h:" + awtModes[i].getHeight() + " bpp:" + awtModes[i].getBitDepth() + ", " + awtModes[i].getRefreshRate() + " Hz.");
 			}
 		}

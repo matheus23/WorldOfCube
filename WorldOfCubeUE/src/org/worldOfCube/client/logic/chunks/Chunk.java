@@ -537,4 +537,17 @@ public class Chunk {
 		return chunkManager.csize;
 	}
 	
+	/**
+	 * @param bx the chunk-space block x position.
+	 * @param by the chunk-space block y position.
+	 * @param foreground whether to check in foreground or background.
+	 * @return whether the position (bx, by) has a surrounding block in a diamond-shape.
+	 */
+	public boolean hasSurrounding(byte bx, byte by, boolean foreground) {
+		return getLocalBlock(bx+1, by, foreground) != null
+				|| getLocalBlock(bx-1, by, foreground) != null
+				|| getLocalBlock(bx, by+1, foreground) != null
+				|| getLocalBlock(bx, by-1, foreground) != null;
+	}
+	
 }

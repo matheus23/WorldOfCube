@@ -6,7 +6,6 @@ import org.worldOfCube.client.blocks.Block;
 import org.worldOfCube.client.blocks.BlockID;
 import org.worldOfCube.client.input.InputManager;
 import org.worldOfCube.client.input.WrappedMouse;
-import org.worldOfCube.client.logic.chunks.light.LightUpdater;
 import org.worldOfCube.client.logic.entity.EntityDrop;
 import org.worldOfCube.client.logic.entity.EntityPlayer;
 import org.worldOfCube.client.logic.inventory.Item;
@@ -16,22 +15,42 @@ import org.worldOfCube.client.util.Distance;
 
 public class MouseCursor {
 	
+	/** Only calculate mouse actions every second frame */
 	public static final int DELAY = 2;
+	/** The distance to be able to place blocks */
 	public static final int BLOCK_PLACE_DIST = 5;
+	
 	public static final int BLOCK_REMOVE = 1;
 	public static final int BLOCK_ADD = 2;
 
 	private boolean inforeground = true;
 	private boolean pressedF;
 	private World world;
-	private LightUpdater light;
 	private int count = 0;
 	
-	public MouseCursor(World world, LightUpdater light) {
+	/**
+	 * Constructor.
+	 * Creates a new Cursor, being able to delete blocks and add
+	 * blocks at the mouse position under various conditions.
+	 * If "world" does not have a "localPlayer", then this class
+	 * is useless, and could throw a NullPointerException at any
+	 * time.
+	 * @param world used for placing, removing blocks and for getting the local Player Entity.
+	 */
+	public MouseCursor(World world) {
 		this.world = world;
-		this.light = light;
 	}
 	
+	/**
+	 * Updates the MouseCursor, calculating whether to place
+	 * blocks or not. If true, it calls {@link #blockAction(int, int, int, EntityPlayer)},
+	 * using {@link #BLOCK_ADD}, if the user right-clicked and
+	 * {@link #BLOCK_REMOVE}, if the user left-clicked.
+	 * @param wx pixel-space viewport x position
+	 * @param wy pixel-space viewport y position
+	 * @param ww viewport width
+	 * @param wh viewport height
+	 */
 	public void tick(float wx, float wy, float ww, float wh) {
 		if (InputManager.down("change") && !pressedF) {
 			pressedF = true;
@@ -58,9 +77,6 @@ public class MouseCursor {
 					blockAction(BLOCK_ADD, x, y, ep);
 					count = DELAY;
 				}
-				if (count > 0) {
-					light.update((int)wx, (int)wy, (int)ww, (int)wh, true);
-				}
 			}
 		}
 		if (count > 0) {
@@ -68,6 +84,15 @@ public class MouseCursor {
 		}
 	}
 	
+	/**
+	 * Cause an action on a world-space block x and y position.
+	 * "action" has to be either {@link #BLOCK_ADD} or {@link #BLOCK_REMOVE}.
+	 * If its none of them, it throws an IllegalArgumentException.
+	 * @param action the action to perform on (x, y).
+	 * @param x the world-space block x position.
+	 * @param y the world-space block y position.
+	 * @param ep the player to get the item from, etc.
+	 */
 	public void blockAction(int action, int x, int y, EntityPlayer ep) {
 		Chunk c = world.getChunkManager().getChunkFromBlockCoords(x, y);
 		byte bx = (byte)(x % world.getChunkManager().csize);
@@ -77,8 +102,8 @@ public class MouseCursor {
 			ItemStack s = world.getInventory().getSelector().getSelected().getStack();
 			if (s != null && s.getNumber() > 0) {
 				if (c.getLocalBlock(bx, by, inforeground) == null
-						&& (hasSurrounding(c, bx, by, inforeground)
-								|| c.getLocalBlock(bx, by, false) != null)) {
+						&& (c.hasSurrounding(bx, by, true)
+								|| c.hasSurrounding(bx, by, false))) {
 					c.setLocalBlock(bx, by, BlockID.itemToBlock(world.getInventory().getSelectionID(), inforeground), inforeground);
 					c.updateDiamond(bx, by);
 					if (ep.colliding()) {
@@ -102,11 +127,4 @@ public class MouseCursor {
 		}
 	}
 	
-	public boolean hasSurrounding(Chunk c, byte bx, byte by, boolean fg) {
-		return c.getBlock(bx-1, by, fg) != null ||
-				c.getBlock(bx+1, by, fg) != null ||
-				c.getBlock(bx, by-1, fg) != null ||
-				c.getBlock(bx, by+1, fg) != null;
-	}
-
 }
