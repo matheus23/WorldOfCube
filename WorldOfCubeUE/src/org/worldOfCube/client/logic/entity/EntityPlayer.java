@@ -5,6 +5,8 @@ import org.worldOfCube.client.input.InputManager;
 import org.worldOfCube.client.logic.animation.Bone;
 import org.worldOfCube.client.logic.animation.Skeleton;
 import org.worldOfCube.client.logic.chunks.World;
+import org.worldOfCube.client.logic.entity.components.ComponentInventory;
+import org.worldOfCube.client.logic.inventory.Inventory;
 import org.worldOfCube.client.res.ResLoader;
 import org.worldOfCube.client.util.vecmath.FastMath;
 import org.worldOfCube.client.util.vecmath.Vec;
@@ -38,17 +40,21 @@ public class EntityPlayer extends Entity {
 	private float legBackTime = (float)Math.PI;
 	private boolean pressedG = false;
 	private boolean godmode = false;
+	private final String name;
+	private double lastMouseX;
+	private double lastMouseY;
+	
+	private ComponentInventory compInv;
 
-	public EntityPlayer(float x, float y, World world, boolean move) {
-		super(x, y, 24, 40, world);
-		if (move) {
-			move(0f, world.totalPix);
-		}
+	public EntityPlayer(double x, double y, String name) {
+		super(x, y, 24, 40);
+		this.name = name;
 		body.setRotation(0f);
 		skel.setDebug(false);
+		compInv = new ComponentInventory(new Inventory());
 	}
 
-	public void tick(double delta) {
+	public void tick(double delta, World world) {
 		if (Keyboard.isKeyDown(Keyboard.KEY_G) && !pressedG) {
 			pressedG = true;
 			godmode = !godmode;
@@ -75,27 +81,17 @@ public class EntityPlayer extends Entity {
 			rect.y += dy;
 		} else {
 			moving = false;
-			onBottom = !positionEmpty(0f, 1f);
+			onBottom = !positionEmpty(0f, 1f, world);
 	
-			calcGravity(delta);
+			calcGravity(delta, world);
 	
-			if (!world.hasKeyboardLock()) {
-				processKeyEvents();
-			}
-	
-			move(dx*delta, dy*delta);
+			move(dx*delta, dy*delta, world);
 		}	
-		clipPosition();
+		clipPosition(world);
 		
 		skel.tick(rect.x+13f, rect.y+6f+(moving && onBottom ? (float)Math.sin(time) : 0f));
 		
-		if (skel.getX() > world.getGameMouseX()) {
-			dir = LEFT;
-		} else {
-			dir = RIGHT;
-		}
-		
-		Vec v = new Vec(skel.getX(), skel.getY(), world.getGameMouseX(), world.getGameMouseY());
+		Vec v = new Vec(skel.getX(), skel.getY(), lastMouseX, lastMouseY);
 		double heading = FastMath.atan2Deg(v.x, v.y);
 		arm.setRotation((dir == RIGHT ? heading : 360f-heading));
 		
@@ -113,11 +109,20 @@ public class EntityPlayer extends Entity {
 			legFront.setRotation(0f);
 			legBack.setRotation(0f);
 		}
+		compInv.tick(delta);
 		afterTick(delta);
 	}
+	
+	public Inventory getInventory() {
+		return compInv.getInv();
+	}
+	
+	public final String getName() {
+		return name;
+	}
 
-	private void calcGravity(double delta) {
-		dy += World.gravity*delta;
+	private void calcGravity(double delta, World world) {
+		dy += World.GRAVITY*delta;
 		if (rect.y > world.totalPix - rect.h) {
 			rect.y = world.totalPix - rect.h;
 			dy = 0;
@@ -125,7 +130,7 @@ public class EntityPlayer extends Entity {
 		}
 	}
 
-	private void clipPosition() {
+	private void clipPosition(World world) {
 		if (rect.x < 0) {
 			rect.x = 0;
 			dx = 0;
@@ -139,34 +144,39 @@ public class EntityPlayer extends Entity {
 			dy = 0;
 		}
 	}
-
-	private void processKeyEvents() {
-		if (InputManager.down("right")) {
+	
+	public void handleKeyEvent(int keyCode, char keyChar, boolean down) {
+		if (InputManager.isOneOfKeys("right", keyCode) && down) {
 			dx = speed;
 			dir = RIGHT;
 			moving = true;
-		} else if (InputManager.down("left")) {
+		} else if (InputManager.isOneOfKeys("left", keyCode) && down) {
 			dx = -speed;
 			dir = LEFT;
 			moving = true;
 		} else {
 			dx = 0f;
 		}
-		if (InputManager.down("up") && onBottom) {
+		if (InputManager.isOneOfKeys("up", keyCode) && down && onBottom) {
 			dy = -JUMP_SPEED;
 			onBottom = false;
 		}
 	}
+	
+	public void handleMousePosition(int mousex, int mousey, World world) {
+		//TODO: Handle lastMouseX and lastMouseY somehow here.
+	}
 
-	public void render() {
+	public void render(World world) {
 		skel.render(dir == RIGHT, 
 				world.getChunkManager().getLightness(
 				(int)(skel.getX()/ResLoader.BLOCK_SIZE), 
 				(int)(skel.getY()/ResLoader.BLOCK_SIZE), true));
+		compInv.render();
 	}
 	
-	public boolean colliding() {
-		return super.colliding() && !godmode;
+	public boolean colliding(World world) {
+		return super.colliding(world) && !godmode;
 	}
 
 }

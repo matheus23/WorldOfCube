@@ -1,6 +1,5 @@
 package org.worldOfCube.client.logic.inventory;
 
-import org.lwjgl.input.Mouse;
 import org.worldOfCube.client.input.WrappedMouse;
 import org.worldOfCube.client.logic.collision.Rectangle;
 import org.worldOfCube.client.res.ResLoader;
@@ -27,10 +26,9 @@ public class Storage {
 	
 	public void tick(boolean enfolded) {
 		if (enfolded) {
-			int mx = Mouse.getX();
+			int mx = WrappedMouse.getX();
 			int my = WrappedMouse.getY();
 			if (rect.contains(mx, my)) {
-				WrappedMouse.eventHappened();
 				selectSlot((int)((mx-offsetx)/ResLoader.GUI_INV_SLOT_SIZE),
 						(int)((my-offsety)/ResLoader.GUI_INV_SLOT_SIZE));
 			}

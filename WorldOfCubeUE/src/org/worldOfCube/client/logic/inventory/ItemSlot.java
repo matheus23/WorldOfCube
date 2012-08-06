@@ -52,6 +52,13 @@ public class ItemSlot {
 		return stack.store(s);
 	}
 	
+	public boolean take(ItemStack store, int ammount) {
+		if (stack == null) {
+			return false;
+		}
+		return stack.take(store, ammount);
+	}
+	
 	public ItemStack getStack() {
 		return stack;
 	}

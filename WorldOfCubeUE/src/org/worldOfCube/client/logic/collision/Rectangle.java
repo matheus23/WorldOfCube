@@ -17,6 +17,13 @@ public class Rectangle {
 		set(x, y, w, h);
 	}
 	
+	/**
+	 * @param other the other Rectangle to copy this one from.
+	 */
+	public Rectangle(Rectangle other) {
+		set(other.x, other.y, other.w, other.h);
+	}
+
 	public boolean intersects(Rectangle r) {
 		if ((x >= (r.x + r.w)) || ((x + w) <= r.x)) {
 			return false;
@@ -53,6 +60,10 @@ public class Rectangle {
 		case 3: glVertex2f((float)x, (float)(y+h)); break;
 		default: throw new IllegalArgumentException("Argument \"id\" has wrong value (not 0-3): " + id);
 		}
+	}
+	
+	public double area() {
+		return w*h;
 	}
 	
 	public void render(boolean asline) {

@@ -7,11 +7,14 @@ import static org.lwjgl.opengl.GL11.glTranslatef;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.matheusdev.util.matrix.MatrixN2f;
+import org.matheusdev.util.matrix.MatrixN3o;
 import org.worldOfCube.client.blocks.Block;
 import org.worldOfCube.client.blocks.BlockEarth;
 import org.worldOfCube.client.blocks.BlockRock;
 import org.worldOfCube.client.logic.chunks.generation.Generator;
 import org.worldOfCube.client.logic.chunks.light.LightSource;
+import org.worldOfCube.client.logic.collision.Rectangle;
 import org.worldOfCube.client.res.ResLoader;
 import org.worldOfCube.client.util.Rand;
 
@@ -19,17 +22,19 @@ public class Chunk {
 
 	public static final int EARTH_OFFSET = 128;
 	public static final int EARTH_SHUFFLE = 8;
+	
+	public static final int FRONT = 0;
+	public static final int BACK = 1;
 
 	private ChunkManager chunkManager;
 	private int x;
 	private int y;
 	private boolean created = false;
-	private Block[][] blocks;
-	private Block[][] blocksBack;
-	private float[][] lightBuffer0;
-	private float[][] lightBuffer1;
-	private float[][] lightFront;
-	private float[][] lightBack;
+	private MatrixN3o<Block> blocks;
+	private MatrixN2f lightBuffer0;
+	private MatrixN2f lightBuffer1;
+	private MatrixN2f lightFront;
+	private MatrixN2f lightBack;
 	private List<LightSource> lights = new ArrayList<LightSource>(0);
 
 	/**
@@ -42,12 +47,11 @@ public class Chunk {
 		chunkManager = cm;
 		this.x = x;
 		this.y = y;
-		lightBuffer0 = new float[chunkManager.csize][chunkManager.csize];
-		lightBuffer1 = new float[chunkManager.csize][chunkManager.csize];
+		lightBuffer0 = new MatrixN2f(chunkManager.csize, chunkManager.csize);
+		lightBuffer1 = new MatrixN2f(chunkManager.csize, chunkManager.csize);
 		lightFront = lightBuffer0;
 		lightBack = lightBuffer1;
-		blocks = new Block[chunkManager.csize][chunkManager.csize];
-		blocksBack = new Block[chunkManager.csize][chunkManager.csize];
+		blocks = new MatrixN3o<Block>(chunkManager.csize, chunkManager.csize, 2);
 	}
 
 	/**
@@ -82,14 +86,14 @@ public class Chunk {
 				if (g.isValid(totalx, totaly)) {
 					if (g.isValid(totalx, totaly, EARTH_OFFSET + Rand.rangeInt(EARTH_SHUFFLE, g.getRand()))) {
 						if (!g.isCaveSet(totalx, totaly)) {
-							blocks[bx][by] = new BlockRock(bx, by, this, true);
+							blocks.set(new BlockRock(bx, by, this, true), bx, by, FRONT);
 						}
-						blocksBack[bx][by] = new BlockRock(bx, by, this, false);
+						blocks.set(new BlockRock(bx, by, this, false), bx, by, BACK);
 					} else {
 						if (!g.isCaveSet(totalx, totaly)) {
-							blocks[bx][by] = new BlockEarth(bx, by, this, true);
+							blocks.set(new BlockEarth(bx, by, this, true), bx, by, FRONT);
 						}
-						blocksBack[bx][by] = new BlockEarth(bx, by, this, false);
+						blocks.set(new BlockEarth(bx, by, this, false), bx, by, BACK);
 					}
 				}
 			}
@@ -105,11 +109,11 @@ public class Chunk {
 	public void updateAll() {
 		for (int x = 0; x < chunkManager.csize; x++) {
 			for (int y = 0; y < chunkManager.csize; y++) {
-				if (blocks[x][y] != null) {
-					blocks[x][y].update();
+				if (blocks.get(x, y, FRONT) != null) {
+					blocks.get(x, y, FRONT).update();
 				}
-				if (blocksBack[x][y] != null) {
-					blocksBack[x][y].update();
+				if (blocks.get(x, y, BACK) != null) {
+					blocks.get(x, y, BACK).update();
 				}
 			}
 		}
@@ -168,9 +172,9 @@ public class Chunk {
 	 */
 	public void setLight(byte x, byte y, float lightness, boolean frontbuffer) {
 		if (frontbuffer) {
-			lightFront[x][y] = lightness;
+			lightFront.set(lightness, x, y);
 		} else {
-			lightBack[x][y] = lightness;
+			lightBack.set(lightness, x, y);
 		}
 	}
 
@@ -184,7 +188,7 @@ public class Chunk {
 		if (bx < 0 || by < 0 || bx >= chunkManager.csize || by >= chunkManager.csize) {
 			return chunkManager.getLightness(x*chunkManager.csize + bx, y*chunkManager.csize + by, frontbuffer);
 		}
-		return frontbuffer ? lightFront[bx][by] : lightBack[bx][by];
+		return frontbuffer ? lightFront.get(bx, by) : lightBack.get(bx, by);
 	}
 
 	/**
@@ -194,8 +198,8 @@ public class Chunk {
 	public void initAll() {
 		for (int x = 0; x < chunkManager.csize; x++) {
 			for (int y = 0; y < chunkManager.csize; y++) {
-				if (blocks[x][y] != null) {
-					blocks[x][y].init();
+				if (blocks.get(x, y, FRONT) != null) {
+					blocks.get(x, y, FRONT).init();
 				}
 			}
 		}
@@ -210,13 +214,13 @@ public class Chunk {
 		if (frontbuffer) {
 			for (int x = 0; x < chunkManager.csize; x++) {
 				for (int y = 0; y < chunkManager.csize; y++) {
-					lightFront[x][y] = 0f;
+					lightFront.set(0f, x, y);
 				}
 			}
 		} else {
 			for (int x = 0; x < chunkManager.csize; x++) {
 				for (int y = 0; y < chunkManager.csize; y++) {
-					lightBack[x][y] = 0f;
+					lightBack.set(0f, x, y);
 				}
 			}
 		}
@@ -249,7 +253,7 @@ public class Chunk {
 	 */
 	public Block getLocalBlock(int x, int y, boolean foreground) {
 		if (x >= 0 && y >= 0 && x < chunkManager.csize && y < chunkManager.csize) {
-			return foreground ? blocks[x][y] : blocksBack[x][y];
+			return foreground ? blocks.get(x, y, FRONT) : blocks.get(x, y, BACK);
 		}
 		return null;
 	}
@@ -268,7 +272,7 @@ public class Chunk {
 	 */
 	public boolean setLocalBlock(byte x, byte y, Block b, boolean foreground) {
 		if (x >= 0 && y >= 0 && x < chunkManager.csize && y < chunkManager.csize) {
-			Block block = foreground ? blocks[x][y] : blocksBack[x][y];
+			Block block = foreground ? blocks.get(x, y, FRONT) : blocks.get(x, y, BACK);
 			if (block != null) {
 				block.destroy();
 			}
@@ -278,9 +282,9 @@ public class Chunk {
 				}
 			}
 			if (foreground) {
-				blocks[x][y] = b;
+				blocks.set(b, x, y, FRONT);
 			} else {
-				blocksBack[x][y] = b;
+				blocks.set(b, x, y, BACK);
 			}
 			return true;
 		}
@@ -378,7 +382,7 @@ public class Chunk {
 	 * @return whether the Method successfully updated a block.
 	 */
 	public boolean updateLocalBlock(int x, int y, boolean foreground) {
-		Block b = foreground ? blocks[x][y] : blocksBack[x][y];
+		Block b = foreground ? blocks.get(x, y, FRONT) : blocks.get(x, y, BACK);
 		if (b != null) {
 			b.update();
 			return true;
@@ -476,22 +480,23 @@ public class Chunk {
 	 * @param ww viewport width.
 	 * @param wh viewport height.
 	 */
-	public void render(float wx, float wy, float ww, float wh) {
+	public void render(Rectangle viewport) {
 		glPushMatrix();
 		{
 			glTranslatef(x*chunkManager.csize*ResLoader.BLOCK_SIZE, 
 					y*chunkManager.csize*ResLoader.BLOCK_SIZE, 0f);
 			
-			int totalbx = ((int) wx) / ResLoader.BLOCK_SIZE;
-			int totalby = ((int) wy) / ResLoader.BLOCK_SIZE;
+			int totalbx = ((int) viewport.x) / ResLoader.BLOCK_SIZE;
+			int totalby = ((int) viewport.y) / ResLoader.BLOCK_SIZE;
 			int beginx = totalbx - (x * chunkManager.csize);
 			int beginy = totalby - (y * chunkManager.csize);
-			int endx = beginx + ((int) ww) / ResLoader.BLOCK_SIZE + 1;
-			int endy = beginy + ((int) wh) / ResLoader.BLOCK_SIZE + 1;
+			int endx = beginx + ((int) viewport.w) / ResLoader.BLOCK_SIZE + 1;
+			int endy = beginy + ((int) viewport.h) / ResLoader.BLOCK_SIZE + 1;
 			beginx = Math.max(0, beginx);
 			beginy = Math.max(0, beginy);
 			endx = Math.min(chunkManager.csize-1, endx);
 			endy = Math.min(chunkManager.csize-1, endy);
+			
 			for (int x = beginx; x <= endx; x++) {
 				for (int y = beginy; y <= endy; y++) {
 					renderBlocksAt(x, y);
@@ -510,28 +515,28 @@ public class Chunk {
 	 */
 	public void renderBlocksAt(int x, int y) {
 		// If the Block in the front is not null, render it:
-		if (blocks[x][y] != null) {
+		if (blocks.get(x, y, FRONT) != null) {
 			// If the Block in the front containsAlpha(), than the block behind is visible,
 			// and must be rendered first (behind).
-			if (blocks[x][y].containsAlpha()) {
+			if (blocks.get(x, y, FRONT).containsAlpha()) {
 				// If the Block in the back is not null, render him.
-				if (blocksBack[x][y] != null) {
-					blocksBack[x][y].renderBackground();
+				if (blocks.get(x, y, BACK) != null) {
+					blocks.get(x, y, BACK).renderBackground();
 				}
 			}
 			// Render the block in foreground.
-			blocks[x][y].render();
+			blocks.get(x, y, FRONT).render();
 		} else {
 			// If there is no Block in foreground, but a block in the background, 
-			// simply render that one.
-			if (blocksBack[x][y] != null) {
-				blocksBack[x][y].renderBackground();
+			// we simply render that one.
+			if (blocks.get(x, y, BACK) != null) {
+				blocks.get(x, y, BACK).renderBackground();
 			}
 		}
 	}
 	
 	/**
-	 * @return the size of this Chunk.
+	 * @return the size of this {@link Chunk}.
 	 */
 	public int getSize() {
 		return chunkManager.csize;

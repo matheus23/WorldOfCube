@@ -1,62 +1,42 @@
 package org.worldOfCube.client.input;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import org.lwjgl.input.Keyboard;
 
 public class InputManager {
 	
-	private class Key {
-		private final String name;
-		private final int[] keys;
-		public Key(String name, int... keys) {
-			this.name = name;
-			this.keys = keys;
-		}
-	}
-	
 	private static InputManager instance;
 	
-	private List<Key> keylist = new ArrayList<Key>();
-	
-	private HashMap<String, Boolean> keys = new HashMap<String, Boolean>();
+	private HashMap<String, int[]> keys = new HashMap<String, int[]>();
 	
 	private InputManager() {
-		keylist.add(new Key("up", 			Keyboard.KEY_UP, Keyboard.KEY_W));
-		keylist.add(new Key("down", 		Keyboard.KEY_DOWN, Keyboard.KEY_S));
-		keylist.add(new Key("left", 		Keyboard.KEY_LEFT, Keyboard.KEY_A));
-		keylist.add(new Key("right", 		Keyboard.KEY_RIGHT, Keyboard.KEY_D));
-		keylist.add(new Key("debug", 		Keyboard.KEY_F3));
-		keylist.add(new Key("screenshot", 	Keyboard.KEY_F2));
-		keylist.add(new Key("regen", 		Keyboard.KEY_R));
-		keylist.add(new Key("change", 		Keyboard.KEY_F));
-		keylist.add(new Key("godmode", 		Keyboard.KEY_G));
-		keylist.add(new Key("lightadd", 	Keyboard.KEY_ADD));
-		keylist.add(new Key("lightsub", 	Keyboard.KEY_MINUS));
-		keylist.add(new Key("lighteq", 		Keyboard.KEY_EQUALS));
+		keys.put("up", new int[] { Keyboard.KEY_UP, Keyboard.KEY_W });
+		keys.put("down", new int[] { Keyboard.KEY_DOWN, Keyboard.KEY_S });
+		keys.put("left", new int[] { Keyboard.KEY_LEFT, Keyboard.KEY_A });
+		keys.put("right", new int[] { Keyboard.KEY_RIGHT, Keyboard.KEY_D });
+		keys.put("debug", new int[] { Keyboard.KEY_F3 });
+		keys.put("screenshot", new int[] { Keyboard.KEY_F2 });
+		keys.put("regen", new int[] { Keyboard.KEY_R });
+		keys.put("change", new int[] { Keyboard.KEY_F });
+		keys.put("godmode", new int[] { Keyboard.KEY_G });
+		keys.put("lightput", new int[] { Keyboard.KEY_ADD });
+		keys.put("lightsub", new int[] { Keyboard.KEY_MINUS });
+		keys.put("lighteq", new int[] { Keyboard.KEY_EQUALS });
 	}
 	
-	private void updateInst() {
-		Key k;
-		for (int i = 0; i < keylist.size(); i++) {
-			k = keylist.get(i);
-			keys.put(k.name, oneDown(k.keys));
-		}
-	}
-	
-	private boolean oneDown(int... keys) {
-		for (int i : keys) {
-			if (Keyboard.isKeyDown(i)) {
+	private boolean downInst(String key) {
+		int[] possibleKeys = keys.get(key);
+		for (int i = 0; i < possibleKeys.length; i++) {
+			if (Keyboard.isKeyDown(possibleKeys[i])) {
 				return true;
 			}
 		}
 		return false;
 	}
 	
-	private boolean downInst(String key) {
-		return keys.get(key);
+	private int[] getKeysInst(String name) {
+		return keys.get(name);
 	}
 	
 	private static InputManager inst() {
@@ -66,12 +46,22 @@ public class InputManager {
 		return instance;
 	}
 	
-	public static void update() {
-		inst().updateInst();
-	}
-	
 	public static boolean down(String key) {
 		return inst().downInst(key);
+	}
+	
+	public static int[] getKeys(String name) {
+		return inst().getKeysInst(name);
+	}
+	
+	public static boolean isOneOfKeys(String name, int key) {
+		int[] arr = inst().getKeysInst(name);
+		for (int i = 0; i < arr.length; i++) {
+			if (arr[i] == key) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 }

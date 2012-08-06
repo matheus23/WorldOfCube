@@ -27,12 +27,28 @@ public class ScreenLoading extends Screen {
 		new Thread(todo).start();
 	}
 
-	public void keyPressed(int key) {
-	}
+	/* (non-Javadoc)
+	 * @see org.worldOfCube.client.screens.Screen#handleMousePosition(int, int)
+	 */
+	@Override
+	public void handleKeyEvent(int keyCode, char keyChar, boolean down) {}
 
-	public void keyReleased(int key) {
-	}
+	/* (non-Javadoc)
+	 * @see org.worldOfCube.client.screens.Screen#handleMousePosition(int, int)
+	 */
+	@Override
+	public void handleMouseEvent(int mousex, int mousey, int button, boolean down) {}
+	
+	/* (non-Javadoc)
+	 * @see org.worldOfCube.client.screens.Screen#handleMousePosition(int, int)
+	 */
+	@Override
+	public void handleMousePosition(int mousex, int mousey) {}
 
+	/* (non-Javadoc)
+	 * @see org.worldOfCube.client.screens.Screen#handleMousePosition(int, int)
+	 */
+	@Override
 	public void tick() {
 		float progress = todo.getProgress();
 		if (progress >= 100f) {
@@ -44,12 +60,17 @@ public class ScreenLoading extends Screen {
 		loadbar.setProgress(progress);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.worldOfCube.client.screens.Screen#handleMousePosition(int, int)
+	 */
+	@Override
 	public void render() {
 		if (drawBackground) {
 			fillStandardBackground();
 		}
 		label.render();
 		loadbar.render();
+		renderCursor();
 	}
 
 	public void resize(int neww, int newh) {

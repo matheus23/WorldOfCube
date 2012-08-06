@@ -43,14 +43,11 @@ public class InventorySelector {
 	}
 	
 	public void tick() {
-		//TODO: Prepare for release. Remove this:
-		slots[3] = new ItemSlot(new ItemStack(new Item(Item.ROCK), 500));
-		if (Mouse.isButtonDown(0) && !WrappedMouse.isEventHappened()) {
+		if (Mouse.isButtonDown(0)) {
 			int mx = WrappedMouse.getX();
 			int my = WrappedMouse.getY();
 			if (rect.contains(mx, my)) {
 				setSelection((int)(my-offsety)/ResLoader.GUI_INV_SLOT_SIZE);
-				WrappedMouse.eventHappened();
 			}
 		}
 		int dwheel = Mouse.getDWheel();

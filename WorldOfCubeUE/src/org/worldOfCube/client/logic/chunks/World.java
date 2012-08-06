@@ -1,266 +1,249 @@
 package org.worldOfCube.client.logic.chunks;
 
-import static org.lwjgl.opengl.GL11.GL_COLOR_ARRAY;
-import static org.lwjgl.opengl.GL11.GL_TEXTURE_COORD_ARRAY;
-import static org.lwjgl.opengl.GL11.GL_VERTEX_ARRAY;
-import static org.lwjgl.opengl.GL11.glColor3f;
-import static org.lwjgl.opengl.GL11.glDisableClientState;
-import static org.lwjgl.opengl.GL11.glEnableClientState;
-import static org.lwjgl.opengl.GL11.glPopMatrix;
-import static org.lwjgl.opengl.GL11.glPushMatrix;
-import static org.lwjgl.opengl.GL11.glTranslatef;
-
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
-import org.lwjgl.input.Mouse;
-import org.universeengine.display.UniDisplay;
-import org.worldOfCube.Log;
-import org.worldOfCube.client.ClientMain;
+import org.magicwerk.brownies.collections.GapList;
+import org.magicwerk.brownies.collections.MaxList;
 import org.worldOfCube.client.blocks.Block;
-import org.worldOfCube.client.input.WrappedMouse;
+import org.worldOfCube.client.input.InputListener;
 import org.worldOfCube.client.logic.chunks.generation.Generator;
-import org.worldOfCube.client.logic.chunks.light.LightUpdater;
 import org.worldOfCube.client.logic.collision.Rectangle;
 import org.worldOfCube.client.logic.entity.Entity;
+import org.worldOfCube.client.logic.entity.EntityDrop;
 import org.worldOfCube.client.logic.entity.EntityPlayer;
-import org.worldOfCube.client.logic.inventory.Inventory;
-import org.worldOfCube.client.logic.inventory.Item;
-import org.worldOfCube.client.logic.inventory.ItemStack;
-import org.worldOfCube.client.res.GLFont;
 import org.worldOfCube.client.res.ResLoader;
-import org.worldOfCube.client.util.Config;
 import org.worldOfCube.client.util.debug.PerfMonitor;
+import org.worldOfCube.client.util.list.ImmutableWrappingList;
 
-public class World {
-
-	public static final double gravity = 2.0*64.0*9.81;
-
-	public int totalPix;
-	public int totalBlocks;
-
+/**
+ * @author matheusdev
+ *
+ */
+public abstract class World implements InputListener {
+	
+	public static final double GRAVITY = 2*64*9.81;
+	public static final int MAX_DROPS = 4000;
+	
+	public final int totalPix;
+	public final int totalBlocks;
+	public final Random rand;
+	
+	protected final Rectangle bounds;
+	protected final Rectangle viewport;
+	protected final String name;
 	protected ChunkManager cManager;
-	protected float worldx = 0;
-	protected float worldy = 0;
-	protected UniDisplay display;
-	protected EntityPlayer localPlayer;
-	protected List<Entity> entitys;
-	public Rectangle bounds = new Rectangle(0, 0, totalPix, totalPix);
-	public Rectangle screen = new Rectangle(0, 0, 800, 600);
-	private LightUpdater light;
-	private Inventory inv;
-	private boolean keyboardLock = false;
-	public Random rand;
-	private String name;
-	public int loadType = 0;
-	public int treesLoaded;
-	public int treesToLoad = 1;
-	private MouseCursor mc;
+	
+	protected GapList<Entity> entitys = new GapList<Entity>();
+	protected MaxList<EntityDrop> drops = new MaxList<EntityDrop>(MAX_DROPS);
+	protected HashMap<String, EntityPlayer> players = new HashMap<String, EntityPlayer>();
 	
 	/**
-	 * Constructor.
-	 * Create a new world with a pre-given ChunkManager, and a name.
-	 * @param display a display instance for getting the size from, to wrap mouse inputs.
-	 * @param cm a ChunkManager, which was given before.
-	 * @param name a name for this world.
+	 * <p>Calls {@link #World(int, int, long, String)} with
+	 * <tt>seed = System.nanoTime() ^ (System.currentTimeMillis() >>> 10)</tt></p> 
+	 * @see #World(int, int, long, String)
 	 */
-	public World(UniDisplay display, ChunkManager cm, String name) {
-		this.cManager = cm;
+	public World(int numChunks, int chunkSize, String name) {
+		this(numChunks, chunkSize, System.nanoTime() ^ (System.currentTimeMillis() >>> 10), name);
+	}
+	
+	/**
+	 * <p>Creates a new World instance, which will have a <strong>newly generated ChunkManager</strong>,
+	 * which means, that the world will have not previously defined blocks on the Chunks in ChunkManager.</p>
+	 * @param numChunks the number of chunks in both x and y axis.
+	 * @param chunkSize the number of blocks in the chunk on both the x and y axis.
+	 * @param seed the seed to use for the random number generator.
+	 * @param name the name of the world.
+	 */
+	public World(int numChunks, int chunkSize, long seed, String name) {
+		// Initialize constructor stuff:
 		this.name = name;
-		this.display = display;
-		rand = new Random();
-		inv = new Inventory();
-		totalPix = cManager.size * cManager.csize * ResLoader.BLOCK_SIZE;
-		totalBlocks = cManager.size * cManager.csize;
-		postGen(null);
-	}
-
-	/**
-	 * Constructor.
-	 * Only for pretty-ness. Calls the other constructor with
-	 * seed = current ms time, and gen = true.
-	 * @param display a display instance for getting the size from, to wrap mouse inputs.
-	 * @param size the size of chunks.
-	 * @param csize the size of blocks inside a chunk.
-	 * @param name the name for this world.
-	 */
-	public World(UniDisplay display, int size, int csize, String name) {
-		this(display, System.currentTimeMillis(), size, csize, name, true);
-	}
-	
-	/**
-	 * Creates a new world, and - if gen is true - generates blocks onto it,
-	 * with the given seed "seed".
-	 * @param display a display instance for getting the size from, to wrap mouse inputs.
-	 * @param seed a seed value, used to create 2 identical worlds.
-	 * @param size the size of chunks.
-	 * @param csize the size of blocks inside a chunk.
-	 * @param name the name for this world.
-	 * @param gen whether to generate the world or not.
-	 */
-	public World(UniDisplay display, long seed, int size, int csize, String name, boolean gen) {
-		this.display = display;
-		this.name = name;
-		rand = new Random(seed);
-		inv = new Inventory();
-		totalPix = size * csize * ResLoader.BLOCK_SIZE;
-		totalBlocks = size * csize;
-		if (gen) {
-			generate(size, csize);
-		} else {
-			postGen(null);
-		}
-	}
-	
-	/**
-	 * This is called by the Constructor. Used to generate blocks onto this world.
-	 * At first this creates a ChunkManager, where it also sets the size and
-	 * chunk size to. Then it begins the "real" world-generation, using a {@link org.worldOfCube.client.logic.chunks.generation.Generator}.
-	 * When the ChunkManager is finished with default block generation, it generates
-	 * the Trees ontop. then it calls {@link #postGen(EntityPlayer)} with a new
-	 * local PlayerEntity instance.
-	 * @param size the size of chunks.
-	 * @param csize the size of blocks on chunks.
-	 */
-	public void generate(int size, int csize) {
-		long time = System.currentTimeMillis();
-		Log.out(this, "Starting World Generation.");
-		Generator g;
-		cManager = new ChunkManager(size, csize);
-		cManager.create(g = new Generator(0.0f, 4f, rand, this), this);
-		loadType = 3;
-		g.generateTrees();
-		postGen(new EntityPlayer(totalPix/2, 48f, this, true));
-		inv.store(new ItemStack(new Item(Item.LIGHTSTONE), 500));
-		Log.out(this, "World Generation finished (" + (System.currentTimeMillis()-time) + " ms).");
-	}
-	
-	/**
-	 * Does after-world initializations. This should be always called.
-	 * "ep" may be null.
-	 * At first it updates every block from the ChunkManager, then 
-	 * adds "ep" to the {@link #entitys} list, and sets {@link #localPlayer}.
-	 * After that it initializes Lighting and the MouseCursor.
-	 * @param ep
-	 */
-	protected void postGen(EntityPlayer ep) {
-		cManager.updateAll();
-		entitys = new ArrayList<Entity>();
-		if (ep != null) {
-			entitys.add(localPlayer = ep);
-		}
-		light = new LightUpdater(cManager);
-		light.recalcLight();
+		// Create ChunkManager with the sizes set in constructor:
+		cManager = new ChunkManager(numChunks, chunkSize);
+		// Generate the world on the new ChunkManager:
+		generateWorld();
+		// Calculate the helper-Constants:
+		//  - totalBlocks: The total size of blocks along the whole world
+		//  - totalPix: The total number of pixels along the whole world
+		totalBlocks = numChunks*chunkSize;
+		totalPix = totalBlocks*ResLoader.BLOCK_SIZE;
+		// Initialize the bounds of the world and the viewport. viewport = bounds by default.
 		bounds = new Rectangle(0, 0, totalPix, totalPix);
-		mc = new MouseCursor(this);
+		viewport = new Rectangle(bounds);
+		// New Random for getting random numbers.
+		rand = new Random();
+	}
+	
+	/**
+	 * <p>Creates a new World instance, which will have a <strong>previously generated {@link ChunkManager} on it</strong></p>
+	 * <p>You can choose the ChunkManager in the constructor's arguments. The world will
+	 * exactly have the same ChunkManager as the given one. The world will not change the 
+	 * blocks on the ChunkManager on creation</p>
+	 * @param cManager the ChunkManager with all definitions of Blocks.
+	 * @param name the name of the world.
+	 * @throws NullPointerException if "cManager" is null.
+	 */
+	public World(ChunkManager cManager, String name) {
+		if (cManager == null) throw new NullPointerException("cManager == null");
+		// Initialize stuff given in the constructor arguments:
+		// Especially the ChunkManager, which is already given here
+		this.cManager = cManager;
+		this.name = name;
+		// Calculate the helper-Constants (see other constructor code's comments for more info)
+		totalBlocks = cManager.getSize() * cManager.getChunkSize();
+		totalPix = totalBlocks * ResLoader.BLOCK_SIZE;
+		// Initialize bounds and viewport, which equals bounds by default.
+		bounds = new Rectangle(0, 0, totalPix, totalPix);
+		viewport = new Rectangle(bounds);
+		// Initialize Random instance:
+		rand = new Random(System.nanoTime() ^ (System.currentTimeMillis() >>> 10));
+	}
+	
+	/**
+	 * <p>This method generates the world. Should be called AFTER the {@link #cManager}
+	 * was created.</p>
+	 * <p>This will first initialize an instance of {@link Generator}, and then
+	 * call {@link ChunkManager#create(Generator)} on {@link #cManager}.</p>
+	 */
+	public void generateWorld() {
+		Generator g = new Generator(0.0f, 4f, rand, this);
+		cManager.create(g); // Creates the blocks according to the information from the "Generator".
 	}
 
 	/**
 	 * The update-step, called every frame. This does only update things,
-	 * but does not render. It also updates world bounds.
+	 * but does not render.
 	 * @param d the delta time, passed since the last update. Usually gotten from {@link org.worldOfCube.client.screens.Screen#getDelta()}
 	 */
 	public void tick(double d) {
 		PerfMonitor.startProfile("ENTITY TICK");
-		for (int i = 0; i < entitys.size(); i++) {
-			entitys.get(i).tick(d);
+		for (Entity e : entitys) {
+			e.tick(d, this);
 		}
-		inv.tick();
 		PerfMonitor.stopProfile("ENTITY TICK");
-		
-		worldx = (float) (localPlayer.getRect().x - display.getWidth() / 2);
-		worldy = (float) (localPlayer.getRect().y - display.getHeight() / 2);
-		worldx = Math.max(0, Math.min(totalPix - display.getWidth(), worldx));
-		worldy = Math.max(0, Math.min(totalPix - display.getHeight(), worldy));
-		screen.set(worldx, worldy, display.getWidth(), display.getHeight());
-		
-		mc.tick(worldx, worldy, display.getWidth(), display.getHeight());
-		
-		light.tick((int)worldx, (int)worldy, display.getWidth(), display.getHeight());
-		
-		WrappedMouse.update();
+	}
+	
+	public abstract void render();
+	
+	/**
+	 * <p>Converts the given <tt>xposition</tt> from window-space to 
+	 * a world-space position.</p>
+	 * <p>With this you can, for example, convert a mouse click from
+	 * a click position on the window to the actual world position in the
+	 * world according to the current viewport.</p>
+	 * @param xposition the x position to convert.
+	 * @return the converted x position (world-space).
+	 */
+	public double convertXPosToWorldPos(double xposition) {
+		return viewport.x + xposition;
 	}
 	
 	/**
-	 * Adds an Entity to the world. That Entity will then be updated and rendered.
-	 * @param e
+	 * <p>Converts the given <tt>yposition</tt> from window-space to 
+	 * a world-space position.</p>
+	 * <p>With this you can, for example, convert a mouse click from
+	 * a click position on the window to the actual world position in the
+	 * world according to the current viewport.</p>
+	 * @param xposition the y position to convert.
+	 * @return the converted y position (world-space).
+	 */
+	public double convertYPositionToWorldPosition(double yposition) {
+		return viewport.y + yposition;
+	}
+	
+	public Rectangle getViewport() {
+		return viewport;
+	}
+	
+	public Rectangle getBounds() {
+		return bounds;
+	}
+	
+	public List<Entity> getEntitys() {
+		return new ImmutableWrappingList<Entity>(entitys);
+	}
+	
+	public EntityPlayer getPlayer(String name) {
+		return players.get(name);
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public void destroy() {
+	}
+	
+	/**
+	 * <p>Removes the given {@link Entity} form the inner-used lists of <tt>Entity</tt>s.</p>
+	 * <p>World caches <tt>Entity</tt>s in multiple Lists and Data Structures. If you call
+	 * this method to remove an <tt>Entity</tt> you can be sure, this Entity will be
+	 * removed entirely. So if no reference to the <tt>Entity</tt> is hold outside, the
+	 * <tt>Entity</tt> will be GCed.</p> 
+	 * @param e the {@link Entity} to be removed.
+	 */
+	public void removeEntity(Entity e) {
+		if (e instanceof EntityPlayer) {
+			players.remove(e);
+		} else if (e instanceof EntityDrop) {
+			drops.remove(e);
+		}
+		entitys.remove(e);
+	}
+	
+	/**
+	 * <p>Adds the given {@link Entity} to the inner-used lists of <tt>Entity</tt>s</p>
+	 * <p>If the <tt>Entity</tt> is an instance of special <tt>Entity</tt>s, for
+	 * example {@link EntityPlayer} or {@link EntityDrop}, then a reference to the 
+	 * <tt>Entity</tt> will also be added to these Lists.</p>
+	 * <p>To remove an <tt>Entity</tt>, see {@link #removeEntity(Entity)}</p>
+	 * @param e the {@link Entity} to be added.
 	 */
 	public void addEntity(Entity e) {
+		if (e == null) throw new NullPointerException("e == null");
+		if (e instanceof EntityPlayer) {
+			EntityPlayer ep = (EntityPlayer) e;
+			players.put(ep.getName(), ep);
+		} else if (e instanceof EntityDrop) {
+			EntityDrop ed = (EntityDrop) e;
+			drops.add(ed);
+		}
 		entitys.add(e);
 	}
 	
 	/**
-	 * Removes an Entity from the world. The entity will no longer be updated or
-	 * rendered. If no other reference to the entity is existing, that entity will be
-	 * gc'ed.
-	 * @param e
+	 * <p>Returns, whether the {@link Entity} <tt>e</tt> exists in any of the used Data Structures for
+	 * <tt>Entity</tt>s.</p>
+	 * @param e whether the {@link Entity} <tt>e</tt> exists in any of the used Data Structures for
+	 * <tt>Entity</tt>s.
+	 * @throws NullPointerException if <tt>e == null</tt>
 	 */
-	public void removeEntity(Entity e) {
-		entitys.remove(e);
+	public boolean isEntityExisting(Entity e) {
+		if (e == null) throw new NullPointerException("e == null");
+		return entitys.contains(e);
 	}
 	
-	public float getClearRed() {
-		return ClientMain.BG_R*light.getSunlight().getStrength();
+	public ChunkManager getChunkManager() {
+		return cManager;
 	}
 	
-	public float getClearGreen() {
-		return ClientMain.BG_G*light.getSunlight().getStrength();
-	}
-	
-	public float getClearBlue() {
-		return ClientMain.BG_B*light.getSunlight().getStrength();
-	}
-
-	/**
-	 * Transforms the current mouse coordinates from screen-space into world-space.
-	 * @return the current world-space mouse x position.
-	 */
-	public float getGameMouseX() {
-		return Mouse.getX() + worldx;
-	}
-
-	/**
-	 * Transforms the current mouse coordinates from screen-space into world-space.
-	 * @return the current world-space mouse y position.
-	 */	
-	public float getGameMouseY() {
-		return (display.getHeight() - Mouse.getY()) + worldy;
-	}
-	
-	/**
-	 * Renders the whole representation of the world. Only renders visible blocks,
-	 * chosen by the current viewport.
-	 */
-	public void render() {
-		glPushMatrix();
-		{
-			glTranslatef(-worldx, -worldy, 0f);
-			glColor3f(1f, 1f, 1f);
-			
-			boolean vaorend = Config.get("block_rendering").equals("vao");
-			if (vaorend) {
-				glEnableClientState(GL_VERTEX_ARRAY);
-				glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-				glEnableClientState(GL_COLOR_ARRAY);
-			}
-			
-			cManager.renderChunks(worldx, worldy, display.getWidth(), display.getHeight());
-
-			glDisableClientState(GL_VERTEX_ARRAY);
-			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-			glDisableClientState(GL_COLOR_ARRAY);
-			
-			for (int i = 0; i < entitys.size(); i++) {
-				entitys.get(i).render();
-			}
+	public void handleKeyEvent(int keyCode, char keyChar, boolean down) {
+		for (Entity e : entitys) {
+			e.handleKeyEvent(keyCode, keyChar, down, this);
 		}
-		glPopMatrix();
-		glColor3f(1f, 1f, 1f);
-		if (Config.get("debug").equals("on")) {
-			GLFont.render(10f, 30f, GLFont.ALIGN_LEFT, entitys.size() + " entitys.", 10);
+	}
+	
+	public void handleMouseEvent(int mousex, int mousey, int button, boolean down) {
+		for (Entity e : entitys) {
+			e.handleMouseEvent(mousex, mousey, button, down, this);
 		}
-		inv.render();
+	}
+	
+	public void handleMousePosition(int mousex, int mousey) {
+		for (Entity e : entitys) {
+			e.handleMousePosition(mousex, mousey, this);
+		}
 	}
 	
 	/**
@@ -288,67 +271,5 @@ public class World {
 		}
 		return true;
 	}
-	
-	@Deprecated
-	public void saveWorldImg() {
-		new WorldMapGenerator(this);
-	}
-	
-	
-	public ChunkManager getChunkManager() {
-		return cManager;
-	}
-	
-	public void setKeyboardLock(boolean lock) {
-		keyboardLock = lock;
-	}
-	
-	public boolean hasKeyboardLock() {
-		return keyboardLock;
-	}
-	
-	public String getName() {
-		return name;
-	}
-	
-	public EntityPlayer getLocalPlayer() {
-		return localPlayer;
-	}
-	
-	public Inventory getInventory() {
-		return inv;
-	}
-	
-	public void setLocalPlayer(EntityPlayer lp) {
-		localPlayer = lp;
-		if (!entitys.contains(lp)) {
-			entitys.add(lp);
-		}
-	}
-	
-	public void setInventory(Inventory inv) {
-		this.inv = inv;
-	}
-	
-	public String getLoadingTitle() {
-		switch(loadType) {
-		case 1: return "Creating chunks.";
-		case 2: return "Creating blocks on chunks.";
-		case 3: return "Creating trees.";
-		default: return "Creating world.";
-		}
-	}
-	
-	public float getLoaded() {
-		switch (loadType) {
-		case 1: case 2: return cManager == null ? 0f : cManager.getLoadProgress();
-		case 3: return treesLoaded/treesToLoad;
-		default: return 0f;
-		}
-	}
-	
-	public void destroy() {
-		light.destroy();
-	}
-	
+
 }

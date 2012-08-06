@@ -63,7 +63,7 @@ public class ScreenOptions extends Screen implements BoxLabelListener {
 				"Enable or Disable Debug\n" +
 				"information.");
 		
-		BoxOptionCycle opt4 = new BoxOptionCycle(Config.get("show_fps").equals("true") ? 0 : 1, "yes", "no");
+		BoxOptionCycle opt4 = new BoxOptionCycle(Config.get("show_fps").equals("true") ? 0 : 1, "on", "off");
 		opt4.withInfoText(
 				"If this Option is set\n" +
 				"to \"yes\", then the\n" +
@@ -83,11 +83,23 @@ public class ScreenOptions extends Screen implements BoxLabelListener {
 		recalcButtons(display.getWidth(), display.getHeight());
 	}
 
-	public void keyPressed(int key) {
-	}
+	/* (non-Javadoc)
+	 * @see org.worldOfCube.client.screens.Screen#handleMousePosition(int, int)
+	 */
+	@Override
+	public void handleKeyEvent(int keyCode, char keyChar, boolean down) {}
 
-	public void keyReleased(int key) {
-	}
+	/* (non-Javadoc)
+	 * @see org.worldOfCube.client.screens.Screen#handleMousePosition(int, int)
+	 */
+	@Override
+	public void handleMouseEvent(int mousex, int mousey, int button, boolean down) {}
+	
+	/* (non-Javadoc)
+	 * @see org.worldOfCube.client.screens.Screen#handleMousePosition(int, int)
+	 */
+	@Override
+	public void handleMousePosition(int mousex, int mousey) {}
 	
 	public void tick() {
 		buttonBack.tick(display);
@@ -111,6 +123,7 @@ public class ScreenOptions extends Screen implements BoxLabelListener {
 		buttonBlockRendering.renderTwo();
 		buttonDebug.renderTwo();
 		buttonShowFPS.renderTwo();
+		renderCursor();
 	}
 	
 	public void resize(int neww, int newh) {
@@ -124,7 +137,7 @@ public class ScreenOptions extends Screen implements BoxLabelListener {
 		Config.setRestart("block_rendering", 
 				buttonBlockRendering.getOptionBox().getSelectedOption().equals("IMM") ? "imm" : "vao");
 		Config.set("debug", buttonDebug.getOptionBox().getSelectedOption().equals("on") ? "on" : "off");
-		Config.set("show_fps", buttonShowFPS.getOptionBox().getSelectedOption().equals("yes") ? "true" : "false");
+		Config.set("show_fps", buttonShowFPS.getOptionBox().getSelectedOption().equals("on") ? "true" : "false");
 	}
 
 	public void boxPressed(BoxLabel bl) {

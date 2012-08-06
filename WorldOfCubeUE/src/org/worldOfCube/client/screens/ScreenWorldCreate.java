@@ -6,8 +6,9 @@ import org.lwjgl.input.Keyboard;
 import org.universeengine.display.UniDisplay;
 import org.worldOfCube.Log;
 import org.worldOfCube.client.ClientMain;
-import org.worldOfCube.client.logic.chunks.World;
+import org.worldOfCube.client.logic.chunks.SingleWorld;
 import org.worldOfCube.client.logic.chunks.WorldSaveManager;
+import org.worldOfCube.client.logic.entity.EntityPlayer;
 import org.worldOfCube.client.res.GLFont;
 import org.worldOfCube.client.screens.gui.BoxInputLabel;
 import org.worldOfCube.client.screens.gui.BoxInputLabelListener;
@@ -52,14 +53,27 @@ public class ScreenWorldCreate extends Screen implements BoxLabelListener, BoxIn
 		recalcButtons(display.getWidth(), display.getHeight());
 	}
 
-	public void keyPressed(int key) {
-	}
-
-	public void keyReleased(int key) {
-		if (key == Keyboard.KEY_ESCAPE) {
+	/* (non-Javadoc)
+	 * @see org.worldOfCube.client.screens.Screen#handleMousePosition(int, int)
+	 */
+	@Override
+	public void handleKeyEvent(int keyCode, char keyChar, boolean down) {
+		if (keyCode == Keyboard.KEY_ESCAPE && down) {
 			mep.setScreen(new ScreenWorlds(display, mep));
 		}
 	}
+
+	/* (non-Javadoc)
+	 * @see org.worldOfCube.client.screens.Screen#handleMousePosition(int, int)
+	 */
+	@Override
+	public void handleMouseEvent(int mousex, int mousey, int button, boolean down) {}
+	
+	/* (non-Javadoc)
+	 * @see org.worldOfCube.client.screens.Screen#handleMousePosition(int, int)
+	 */
+	@Override
+	public void handleMousePosition(int mousex, int mousey) {}
 
 	public void tick() {
 		buttonCreate.tick(display);
@@ -86,6 +100,7 @@ public class ScreenWorldCreate extends Screen implements BoxLabelListener, BoxIn
 		labelWorldSeed.renderTwo();
 		inputName.renderTwo();
 		inputSeed.renderTwo();
+		renderCursor();
 	}
 
 	public void resize(int neww, int newh) {
@@ -103,12 +118,17 @@ public class ScreenWorldCreate extends Screen implements BoxLabelListener, BoxIn
 			if (inputName.getText().length() > 0
 					&& checkWorldName(inputName.getText())) {
 				mep.setScreen(new ScreenLoading(display, mep, true, new Loadable() {
-					private World world;
+					private SingleWorld world;
 					private boolean generated;
 					
 					public void run() {
-						world = new World(display, inputSeed.getText().length() == 0 ? System.currentTimeMillis() : inputSeed.getText().toString().hashCode(), 32, 64, inputName.getText().toString(), true);
-						world.generate(32, 64);
+						if (inputSeed.getText().length() == 0) {
+							world = new SingleWorld(new EntityPlayer(0, 0, "Player"), 32, 64, inputName.getText().toString());
+						} else {
+							world = new SingleWorld(new EntityPlayer(0, 0, "Player"), 32, 64, inputSeed.getText().hashCode(), inputName.getText().toString());
+						}
+						world = new SingleWorld(display, 
+								inputSeed.getText().length() == 0 ? System.currentTimeMillis() : inputSeed.getText().toString().hashCode(), 32, 64, inputName.getText().toString(), true);
 						generated = true;
 					}
 					
@@ -117,11 +137,11 @@ public class ScreenWorldCreate extends Screen implements BoxLabelListener, BoxIn
 					}
 					
 					public String getTitle() {
-						return world == null ? "Creating World." : world.getLoadingTitle();
+						return "Loading"; //TODO: Re-Implement world == null ? "Creating World." : world.getLoadingTitle();
 					}
 					
 					public float getProgress() {
-						return world == null ? 0f : (generated ? 100f : world.getLoaded());
+						return world == null ? 0f : (generated ? 100f : /* TODO: Re-implement: world.getLoaded()*/ 50f);
 					}
 				}));
 			}

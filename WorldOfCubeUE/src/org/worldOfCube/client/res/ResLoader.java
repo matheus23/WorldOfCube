@@ -35,7 +35,7 @@ import org.worldOfCube.client.util.opengl.BlockVAO;
 
 public final class ResLoader {
 	
-	public static final String res = "org/worldOfCube/client/resources/";
+	public static final String res = "org/worldOfCube/resources/";
 	
 	/*
 	 * SpriteSheet ID's:
@@ -115,6 +115,7 @@ public final class ResLoader {
 	public static UniTexture guiBackground;
 	// Titlescreen-Background
 	public static UniTexture tsBackground;
+	public static UniTexture cursor;
 	
 	public static void load() {
 		Log.out(ResLoader.class, "Using texture rect = " + StateManager.isUsingTexRect());
@@ -172,6 +173,8 @@ public final class ResLoader {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, pack.width, pack.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pack.data);
 		guiBackground = new UniTexture(id, pack.width, pack.height);
 		glBindTexture(GL_TEXTURE_2D, 0);
+		
+		cursor = loadTex(res + "Cursor.png", false);
 	}
 	
 	public static void loadTitle() {

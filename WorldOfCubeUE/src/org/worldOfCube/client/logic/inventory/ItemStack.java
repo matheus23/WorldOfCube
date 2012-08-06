@@ -48,6 +48,25 @@ public class ItemStack {
 			return s;
 		}
 	}
+
+	
+	public boolean take(ItemStack store, int ammount) {
+		if (ammount <= 0) {
+			return false;
+		}
+		int storemax = Item.getStackable(store.getItemID());
+		int storecur = store.getNumber();
+		
+		if (storecur+ammount > storemax) {
+			return take(store, ammount-1);
+		}
+		if (num < ammount) {
+			return take(store, ammount-1);
+		}
+		num -= ammount;
+		store.num += ammount;
+		return true;
+	}
 	
 	public Item getItem() {
 		return item;

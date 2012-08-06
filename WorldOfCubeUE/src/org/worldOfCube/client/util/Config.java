@@ -34,9 +34,10 @@ public class Config {
 			return;
 		}
 		FileInputStream fis = null;
+		BufferedReader read = null;
 		try {
 			fis = new FileInputStream(config);
-			BufferedReader read = new BufferedReader(new InputStreamReader(fis));
+			read = new BufferedReader(new InputStreamReader(fis));
 			String line;
 			int linenum = 0;
 			while ((line = read.readLine()) != null) {
@@ -58,6 +59,9 @@ public class Config {
 			Log.err(this, "Error loading Config:");
 			e.printStackTrace();
 		} finally {
+			if (read != null) {
+				read.close();
+			}
 			if (fis != null) {
 				fis.close();
 			}

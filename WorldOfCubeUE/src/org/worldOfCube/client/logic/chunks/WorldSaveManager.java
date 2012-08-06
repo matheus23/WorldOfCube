@@ -9,11 +9,14 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.universeengine.display.UniDisplay;
 import org.worldOfCube.Log;
 import org.worldOfCube.client.blocks.Block;
 import org.worldOfCube.client.blocks.BlockID;
+import org.worldOfCube.client.logic.entity.Entity;
 import org.worldOfCube.client.logic.entity.EntityPlayer;
 import org.worldOfCube.client.logic.inventory.Inventory;
 import org.worldOfCube.client.logic.inventory.InventorySelector;
@@ -44,18 +47,24 @@ public class WorldSaveManager {
 		}
 	}
 	
+	private class PlayerInfo {
+		PlayerInfo() { inv = new Inventory(); }
+		float playerx;
+		float playery;
+		Inventory inv;
+	}
+	
 	private class WorldLoadPack {
 		public int wsize;
 		public int csize;
-		public float playerx;
-		public float playery;
-		public Inventory inv;
+		public List<PlayerInfo> players;
 	}
 	
 	public static final String worldDirStr = "worlds";
 	public static final File worldDir = new File(worldDirStr);
 	public static final String headerName = "header.wld";
 	public static final String dataName = "chunkData.chd";
+	public static final String renameSuffix = ".wocsave";
 	
 	public static final int ONE_KB = 1024;
 	public static final int ONE_MB = ONE_KB*1024;
@@ -103,14 +112,24 @@ public class WorldSaveManager {
 			String worldDir = worldDirStr + "/" + world.getName();
 			File dir = new File(worldDir);
 			dir.mkdir();
-			
-			File header = new File(worldDir + "/" + headerName);
+
+			// Create both a file with a save-suffix and without:
+			File header = new File(worldDir + "/" + headerName + renameSuffix);
+			File finalHeader = new File(worldDir + "/" + headerName);
+			// Save the stuff to the File with the suffix:
 			dosHeader = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(header), ONE_KB));
 			saveHeader(world, dosHeader);
-			
-			File chunkData = new File(worldDir + "/" + dataName);
+			// Rename the file to the File without the suffix:
+			header.renameTo(finalHeader);
+
+			// Create both a file with a save-suffix and without:
+			File chunkData = new File(worldDir + "/" + dataName + renameSuffix);
+			File finalChunkData = new File(worldDir + "/" + dataName);
+			// Save the stuff to the File with the suffix:
 			dosCData = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(chunkData), ONE_MB));
 			saveChunks(world, dosCData);
+			// Rename the file to the File without the suffix:
+			chunkData.renameTo(finalChunkData);
 			
 			Log.out(this, "World saving finished (" + (TimeUtil.ms()-time) + " ms)");
 		} catch (IOException e) {
@@ -126,29 +145,32 @@ public class WorldSaveManager {
 		dos.writeInt(world.getChunkManager().size);
 		dos.writeInt(world.getChunkManager().csize);
 		
-		EntityPlayer ep = world.getLocalPlayer();
-		if (ep != null) {
+		for (Entity e : world.getEntitys()) {
+			EntityPlayer ep = (EntityPlayer) e;
+			
 			dos.writeByte(PLAYER_FLAG);
+			dos.writeBytes(ep.getName());
 			dos.writeFloat((float)ep.getRect().x);
 			dos.writeFloat((float)ep.getRect().y);
-		}
-		
-		Inventory inv = world.getInventory();
-		if (inv != null) {
-			dos.writeByte(INV_SLOT_FlAG);
-			InventorySelector is = inv.getSelector();
-			for (int i = 0; i < Inventory.SLOTS; i++) {
-				saveItem(is.getSlot(i).getStack(), dos);
-			}
 			
-			dos.writeByte(INV_FLAG);
-			Storage sto = inv.getStorage();
-			for (int x = 0; x < Inventory.HORIZ_SLOTS; x++) {
-				for (int y = 0; y < Inventory.SLOTS; y++) {
-					saveItem(sto.getSlot(x, y), dos);
+			Inventory inv = ep.getInventory();
+			if (inv != null) {
+				dos.writeByte(INV_SLOT_FlAG);
+				InventorySelector is = inv.getSelector();
+				for (int i = 0; i < Inventory.SLOTS; i++) {
+					saveItem(is.getSlot(i).getStack(), dos);
+				}
+				
+				dos.writeByte(INV_FLAG);
+				Storage sto = inv.getStorage();
+				for (int x = 0; x < Inventory.HORIZ_SLOTS; x++) {
+					for (int y = 0; y < Inventory.SLOTS; y++) {
+						saveItem(sto.getSlot(x, y), dos);
+					}
 				}
 			}
 		}
+		
 	}
 	
 	private void saveItem(ItemStack is, DataOutputStream dos) throws IOException {
@@ -182,10 +204,10 @@ public class WorldSaveManager {
 		}
 	}
 	
-	private World loadWorldInst(String name, UniDisplay display) throws IOException {
+	private SingleWorld loadSingleplayerWorldInst(String name) throws IOException {
 		long time = TimeUtil.ms();
 		DataInputStream disHeader = null;
-		DataInputStream disCData = null;
+		DataInputStream disChunkData = null;
 		try {
 			Log.out(this, "Starting world loading...");
 			if (runningSaver != null) {
@@ -198,33 +220,36 @@ public class WorldSaveManager {
 				Log.out(this, "The other saving Thread is finished.");
 			}
 			
-			File header = new File(worldDirStr + "/" + name + "/" + headerName);
+			String worldDir = worldDirStr + "/" + name;
+			
+			File header = new File(worldDir + "/" + headerName);
 			disHeader = new DataInputStream(new BufferedInputStream(new FileInputStream(header), ONE_KB));
 			WorldLoadPack wlp = loadHeader(disHeader);
+			if (wlp.players.size() < 1) throw new RuntimeException("The header didn't include any player information.");
 			
-			File chunkData = new File(worldDir + "/" + name + "/" + dataName);
+			File chunkData = new File(worldDir + "/" + dataName);
 			toLoad = chunkData.length();
-			disCData = new DataInputStream(new BufferedInputStream(new FileInputStream(chunkData), ONE_MB));
-			ChunkManager cManager = loadChunks(wlp, disCData);
+			disChunkData = new DataInputStream(new BufferedInputStream(new FileInputStream(chunkData), ONE_MB));
+			ChunkManager cManager = loadChunks(wlp, disChunkData);
 			loaded = 1;
 			toLoad = 1;
 			
-			World world = new World(display, cManager, name);
-			world.setLocalPlayer(new EntityPlayer(wlp.playerx, wlp.playery, world, false));
-			world.setInventory(wlp.inv);
+			PlayerInfo playerInfo = wlp.players.get(0);
+			SingleWorld world = new SingleWorld(new EntityPlayer(playerInfo.playerx, playerInfo.playery, "Player"), cManager, name);
 			Log.out(this, "World loaded (" + (TimeUtil.ms()-time) + " ms)");
 			return world;
 		} catch (IOException e) {
 			throw e;
 		} finally {
 			if (disHeader != null) disHeader.close();
-			if (disCData != null) disCData.close();
+			if (disChunkData != null) disChunkData.close();
 		}
 	}
 	
 	private WorldLoadPack loadHeader(DataInputStream dis) throws IOException {
 		WorldLoadPack pack = new WorldLoadPack();
-		Inventory inv = new Inventory();
+		pack.players = new ArrayList<PlayerInfo>();
+		PlayerInfo currentPlayer = new PlayerInfo();
 		while(dis.available() > 1) {
 			byte b = dis.readByte();
 			switch (b) {
@@ -233,17 +258,21 @@ public class WorldSaveManager {
 				pack.csize = dis.readInt();
 				break;
 			case PLAYER_FLAG:
-				pack.playerx = dis.readFloat();
-				pack.playery = dis.readFloat();
+				if (currentPlayer != null) pack.players.add(currentPlayer);
+				currentPlayer = new PlayerInfo(); // Creates new Inventory instance in currentPlayer.inv
+				currentPlayer.playerx = dis.readFloat();
+				currentPlayer.playery = dis.readFloat();
 				break;
 			case INV_SLOT_FlAG:
-				InventorySelector is = inv.getSelector();
+				if (currentPlayer == null) throw new NullPointerException("\"currentPlayer == null\", the PLAYER_FLAG was missing!");
+				InventorySelector is = currentPlayer.inv.getSelector();
 				for (int i = 0; i < Inventory.SLOTS; i++) {
 					is.setSlot(i, new ItemSlot(loadItem(dis)));
 				}
 				break;
 			case INV_FLAG:
-				Storage sto = inv.getStorage();
+				if (currentPlayer == null) throw new NullPointerException("\"currentPlayer == null\", the PLAYER_FLAG was missing!");
+				Storage sto = currentPlayer.inv.getStorage();
 				for (int x = 0; x < Inventory.HORIZ_SLOTS; x++) {
 					for (int y = 0; y < Inventory.SLOTS; y++) {
 						sto.setSlot(x, y, loadItem(dis));
@@ -252,7 +281,7 @@ public class WorldSaveManager {
 				break;
 			}
 		}
-		pack.inv = inv;
+		if (currentPlayer != null) pack.players.add(currentPlayer);
 		return pack;
 	}
 	
@@ -315,8 +344,9 @@ public class WorldSaveManager {
 		inst().saveWorldInst(world);
 	}
 	
-	public static World loadWorld(String name, UniDisplay display) throws IOException {
-		return inst().loadWorldInst(name, display);
+	// TODO: MultiWorld-implementation: Implement loading and saving!
+	public static World loadSingleplayerWorld(String name) throws IOException {
+		return inst().loadSingleplayerWorldInst(name);
 	}
 	
 	public static boolean saveWorldThread(World world) {

@@ -11,9 +11,12 @@ import static org.lwjgl.opengl.GL11.GL_NICEST;
 import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
 import static org.lwjgl.opengl.GL11.GL_PERSPECTIVE_CORRECTION_HINT;
 import static org.lwjgl.opengl.GL11.GL_PROJECTION;
+import static org.lwjgl.opengl.GL11.GL_QUADS;
+import static org.lwjgl.opengl.GL11.GL_QUAD_STRIP;
 import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL11.GL_VERTEX_ARRAY;
+import static org.lwjgl.opengl.GL11.glBegin;
 import static org.lwjgl.opengl.GL11.glBlendFunc;
 import static org.lwjgl.opengl.GL11.glClearColor;
 import static org.lwjgl.opengl.GL11.glClearDepth;
@@ -21,23 +24,30 @@ import static org.lwjgl.opengl.GL11.glCullFace;
 import static org.lwjgl.opengl.GL11.glDisable;
 import static org.lwjgl.opengl.GL11.glEnable;
 import static org.lwjgl.opengl.GL11.glEnableClientState;
+import static org.lwjgl.opengl.GL11.glEnd;
 import static org.lwjgl.opengl.GL11.glHint;
 import static org.lwjgl.opengl.GL11.glIsEnabled;
 import static org.lwjgl.opengl.GL11.glLoadIdentity;
 import static org.lwjgl.opengl.GL11.glMatrixMode;
 import static org.lwjgl.opengl.GL11.glOrtho;
+import static org.lwjgl.opengl.GL11.glTexCoord2f;
+import static org.lwjgl.opengl.GL11.glVertex2f;
 import static org.lwjgl.opengl.GL11.glViewport;
 
 import java.awt.Dimension;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.Thread.UncaughtExceptionHandler;
 
 import javax.swing.JOptionPane;
 
+import org.lwjgl.BufferUtils;
+import org.lwjgl.LWJGLException;
+import org.lwjgl.input.Cursor;
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GLContext;
 import org.universeengine.UniverseEngineEntryPoint;
@@ -157,6 +167,12 @@ public class ClientMain implements UniverseEngineEntryPoint, UniInputListener {
 		display.getFrame().setMinimumSize(new Dimension(640, 480));
 		display.setVisible(true);
 		
+		try {
+			Mouse.setNativeCursor(new Cursor(16, 16, 0, 0, 1, BufferUtils.createIntBuffer(16*16), BufferUtils.createIntBuffer(1)));
+		} catch (LWJGLException e) {
+			e.printStackTrace();
+		}
+		
 		Display.setVSyncEnabled(vsync);
 		loop.setDelay(limitFPS);
 		UniPrint.enabled = false;
@@ -197,6 +213,24 @@ public class ClientMain implements UniverseEngineEntryPoint, UniInputListener {
 	public void render() {
 		PerfMonitor.startProfile("RENDER");
 		screen.render();
+		
+		boolean save = StateManager.isUsingTexRect();
+		StateManager.useTexRect(false);
+		StateManager.bindTexture(ResLoader.cursor);
+		StateManager.useTexRect(save);
+		
+		glBegin(GL_QUADS);
+		{
+			glVertex2f(WrappedMouse.getX(), WrappedMouse.getY());
+			glTexCoord2f(0f, 0f);
+			glVertex2f(WrappedMouse.getX()+ResLoader.cursor.getWidth(), WrappedMouse.getY());
+			glTexCoord2f(1f, 0f);
+			glVertex2f(WrappedMouse.getX()+ResLoader.cursor.getWidth(), WrappedMouse.getY()+ResLoader.cursor.getHeight());
+			glTexCoord2f(1f, 1f);
+			glVertex2f(WrappedMouse.getX(), WrappedMouse.getY()+ResLoader.cursor.getHeight());
+			glTexCoord2f(0f, 1f);
+		}
+		glEnd();
 	}
 	
 	public void displayUpdate() {
@@ -253,20 +287,24 @@ public class ClientMain implements UniverseEngineEntryPoint, UniInputListener {
 		System.out.println("Fine.");
 		Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
 			public void uncaughtException(Thread thread, Throwable e) {
-				final StringBuilder sb = new StringBuilder();
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				PrintStream ps = new PrintStream(baos);
 				
-				e.printStackTrace(new PrintStream(new OutputStream() {
-					public void write(int b) throws IOException {
-						String s = new String(new byte[] { (byte) b });
-						sb.append(s);
-						System.err.print(s);
-					}
-				}));
-				JOptionPane.showMessageDialog(null, "Exception occured in Thread " + thread.getName() + ":\n" + sb, "WorldOfCube: Exception occured.", JOptionPane.ERROR_MESSAGE);
+				e.printStackTrace(ps);
+				
+				String msg = baos.toString();
+				ps.close();
+				
+				System.err.println(msg);
+				
+				JOptionPane.showMessageDialog(null, 
+						"Exception occured in Thread " + thread.getName() + ":\n" + msg,
+						"WorldOfCube: Exception occured.", JOptionPane.ERROR_MESSAGE);
 			}
 		});
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 			public void run() {
+				Mouse.setGrabbed(false);
 				Config.save();
 			}
 		}));

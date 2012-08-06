@@ -3,16 +3,18 @@ package org.worldOfCube.client.logic.chunks;
 import org.worldOfCube.Log;
 import org.worldOfCube.client.blocks.Block;
 import org.worldOfCube.client.logic.chunks.generation.Generator;
+import org.worldOfCube.client.logic.collision.Rectangle;
 import org.worldOfCube.client.res.ResLoader;
 import org.worldOfCube.client.util.Timer;
 
 public class ChunkManager {
+
+	public final int pixelPerChunk;
 	
-	public int size = 32;
-	public int csize = 64;
-	public int pixelPerChunk = ResLoader.BLOCK_SIZE*csize;
+	protected final int size;
+	protected final int csize;
 	
-	private Chunk[][] chunks;
+	protected Chunk[][] chunks;
 	
 	private long loaded;
 	private long toLoad = 1;
@@ -33,6 +35,14 @@ public class ChunkManager {
 		toLoad = size*size;
 	}
 	
+	public int getSize() {
+		return size;
+	}
+	
+	public int getChunkSize() {
+		return csize;
+	}
+	
 	/**
 	 * Creates a World with a given Generator, calling
 	 * Chunk's {@link Chunk#createBlocks(Generator)}.
@@ -40,14 +50,11 @@ public class ChunkManager {
 	 * {@link #createChunks(Generator)}, then
 	 * {@link #initAll()}.
 	 * @param g the Generator for the Generation information.
-	 * @param world the World, used for setting the loadOptions.
 	 */
-	public void create(Generator g, World world) {
-		world.loadType = 1;
+	public void create(Generator g) {
 		initChunks();
 		Log.out(this, "Creating chunks with world size " + size + " and chunk size " + csize);
 		Timer t = new Timer().start();
-		world.loadType = 2;
 		createChunks(g);
 		initAll();
 		Log.out(this, "Creation took " + t.stop() + " milliseconds");
@@ -89,18 +96,18 @@ public class ChunkManager {
 	 * @param ww viewport width.
 	 * @param wh viewport height.
 	 */
-	public void renderChunks(float wx, float wy, float ww, float wh) {
-		int beginx = (int)(wx/pixelPerChunk);
-		int beginy = (int)(wy/pixelPerChunk);
-		int endx = (int)((wx+ww)/pixelPerChunk)+1;
-		int endy = (int)((wy+wh)/pixelPerChunk)+1;
+	public void renderChunks(Rectangle viewport) {
+		int beginx = (int)(viewport.x/pixelPerChunk);
+		int beginy = (int)(viewport.y/pixelPerChunk);
+		int endx = (int)((viewport.x+viewport.w)/pixelPerChunk)+1;
+		int endy = (int)((viewport.x+viewport.h)/pixelPerChunk)+1;
 		beginx = Math.max(0, beginx);
 		beginy = Math.max(0, beginy);
 		endx = Math.min(size, endx);
 		endy = Math.min(size, endy);
 		for (int x = beginx; x < endx; x++) {
 			for (int y = beginy; y < endy; y++) {
-				chunks[x][y].render(wx, wy, ww, wh);
+				chunks[x][y].render(viewport);
 			}
 		}
 	}
@@ -298,7 +305,7 @@ public class ChunkManager {
 	}
 	
 	/**
-	 * @return the Load process in %, used by the loading bar, and {@link World#getLoaded()}.
+	 * @return the Load process in %, used by the loading bar, and {@link SingleplayerWorldTHEFUCK#getLoaded()}.
 	 */
 	public float getLoadProgress() {
 		return ((float)loaded/(float)toLoad)*100f;

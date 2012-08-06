@@ -33,11 +33,23 @@ public class ScreenMenu extends Screen implements BoxLabelListener {
 		recalcButtons(display.getWidth(), display.getHeight());
 	}
 
-	public void keyPressed(int key) {
-	}
+	/* (non-Javadoc)
+	 * @see org.worldOfCube.client.screens.Screen#handleMousePosition(int, int)
+	 */
+	@Override
+	public void handleKeyEvent(int keyCode, char keyChar, boolean down) {}
 
-	public void keyReleased(int key) {
-	}
+	/* (non-Javadoc)
+	 * @see org.worldOfCube.client.screens.Screen#handleMousePosition(int, int)
+	 */
+	@Override
+	public void handleMouseEvent(int mousex, int mousey, int button, boolean down) {}
+	
+	/* (non-Javadoc)
+	 * @see org.worldOfCube.client.screens.Screen#handleMousePosition(int, int)
+	 */
+	@Override
+	public void handleMousePosition(int mousex, int mousey) {}
 	
 	public void tick() {
 		zoomBG.tick(getDelta());
@@ -51,6 +63,7 @@ public class ScreenMenu extends Screen implements BoxLabelListener {
 		buttonExit.render();
 		buttonWorlds.renderTwo();
 		buttonExit.renderTwo();
+		renderCursor();
 	}
 	
 	public void resize(int neww, int newh) {

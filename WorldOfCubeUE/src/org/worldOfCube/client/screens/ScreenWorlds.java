@@ -40,17 +40,19 @@ public class ScreenWorlds extends Screen implements BoxLabelListener {
 		
 		recalcButtons(display.getWidth(), display.getHeight());
 	}
-
-	public void keyPressed(int key) {
-		scrollPanel.keyPressed(key);
-	}
-
-	public void keyReleased(int key) {
-		if (key == Keyboard.KEY_ESCAPE) {
-			mep.setScreen(new ScreenMenu(display, mep));
+	
+	public void handleKeyEvent(int keyCode, char keyChar, boolean down) {
+		if (down) {
+			scrollPanel.keyPressed(keyCode);
+		} else {
+			if (keyCode == Keyboard.KEY_ESCAPE) {
+				mep.setScreen(new ScreenMenu(display, mep));
+			}
+			scrollPanel.keyReleased(keyCode);
 		}
-		scrollPanel.keyReleased(key);
 	}
+	
+	public void handleMouseEvent(int mousex, int mousey, int button, boolean down) {}
 
 	public void tick() {
 		buttonCreate.tick(display);
@@ -67,6 +69,7 @@ public class ScreenWorlds extends Screen implements BoxLabelListener {
 		
 		buttonCreate.renderTwo();
 		buttonBack.renderTwo();
+		renderCursor();
 	}
 
 	public void resize(int neww, int newh) {

@@ -1,15 +1,24 @@
 package org.worldOfCube.client.screens;
 
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_QUADS;
+import static org.lwjgl.opengl.GL11.glBegin;
+import static org.lwjgl.opengl.GL11.glClear;
+import static org.lwjgl.opengl.GL11.glClearColor;
+import static org.lwjgl.opengl.GL11.glEnd;
+import static org.lwjgl.opengl.GL11.glLoadIdentity;
+import static org.lwjgl.opengl.GL11.glTexCoord2f;
+import static org.lwjgl.opengl.GL11.glVertex2f;
 
 import org.lwjgl.Sys;
+import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
 import org.universeengine.display.UniDisplay;
-import org.universeengine.util.input.UniInputListener;
 import org.worldOfCube.client.ClientMain;
 import org.worldOfCube.client.res.ResLoader;
 import org.worldOfCube.client.util.StateManager;
 
-public abstract class Screen implements UniInputListener {
+public abstract class Screen {
 	
 	protected UniDisplay display;
 	protected ClientMain mep;
@@ -75,6 +84,35 @@ public abstract class Screen implements UniInputListener {
 		glEnd();
 		StateManager.useTexRect(save);
 	}
+	
+	public void renderCursor() {
+	}
+	
+	public void handleMouseEvents() {
+		while (Keyboard.next()) {
+			handleKeyEvent(
+					Keyboard.getEventKey(), 
+					Keyboard.getEventCharacter(), 
+					Keyboard.getEventKeyState());
+		}
+		while (Mouse.next()) {
+			handleMouseEvent(
+					Mouse.getEventX(), 
+					// Wrap the mouse position on the y axis, because in our game 
+					// we have the origin at the top-left corner. 
+					// But LWJGL assumes the Origin is at the bottom-left corner.
+					(display.getHeight()-1)-Mouse.getEventY(), 
+					Mouse.getEventButton(), 
+					Mouse.getEventButtonState());
+		}
+		handleMousePosition(Mouse.getX(), (display.getHeight()-1) - Mouse.getY());
+	}
+	
+	public abstract void handleKeyEvent(int keyCode, char keyChar, boolean down);
+	
+	public abstract void handleMouseEvent(int mousex, int mousey, int button, boolean down);
+	
+	public abstract void handleMousePosition(int mousex, int mousey);
 	
 	public double getDelta() {
 		long time = Sys.getTime();

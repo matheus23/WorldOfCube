@@ -56,7 +56,7 @@ public class Generator {
 		littleRootGen = new LittleRootGenerator(rand, world);
 		
 		size = worldSize();
-		Log.out(this, "Creating Generator for size " + size + " (wsize: " + world.getChunkManager().size + ", csize: " + world.getChunkManager().csize + ")");
+		Log.out(this, "Creating Generator for size " + size + " (wsize: " + world.getChunkManager().getSize() + ", csize: " + world.getChunkManager().getChunkSize() + ")");
 		
 		left = new float[2][];
 		right = new float[2][];
@@ -123,15 +123,11 @@ public class Generator {
 	 * @param world
 	 */
 	private void genTrees(World world) {
-		world.treesToLoad = 4;
+		//TODO: Add load progress stuff again.
 		genTreesOnSide(world, top[0], 0);
-		world.treesLoaded++;
 		genTreesOnSide(world, left[0], 1);
-		world.treesLoaded++;
 		genTreesOnSide(world, bottom[0], 2);
-		world.treesLoaded++;
 		genTreesOnSide(world, right[0], 3);
-		world.treesLoaded++;
 	}
 	
 	/**
@@ -154,8 +150,7 @@ public class Generator {
 	 * @param side the side of the world. Either 0, 1, 2, or 3.
 	 */
 	public void genTreesOnSide(World world, float[] surface, int side) {
-		//TODO: Change this mindist... in some way. It's bad this way. Generate it out of the world-size.
-		int mindist = 20;
+		int mindist = world.totalBlocks/20;
 		int repeat = world.totalBlocks/(mindist*6);
 		double rotation;
 		switch (side) {
@@ -310,7 +305,7 @@ public class Generator {
 	}
 	
 	private int worldSize() {
-		return world.getChunkManager().size * world.getChunkManager().csize;
+		return world.getChunkManager().getSize() * world.getChunkManager().getChunkSize();
 	}
 	
 	public void floatvToIntv(float[] fv, int [] dest) {

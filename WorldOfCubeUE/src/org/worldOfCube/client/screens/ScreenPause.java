@@ -4,8 +4,7 @@ import java.io.IOException;
 
 import org.universeengine.display.UniDisplay;
 import org.worldOfCube.client.ClientMain;
-import org.worldOfCube.client.input.WrappedMouse;
-import org.worldOfCube.client.logic.chunks.World;
+import org.worldOfCube.client.logic.chunks.SingleWorld;
 import org.worldOfCube.client.logic.chunks.WorldSaveManager;
 import org.worldOfCube.client.screens.gui.BoxLabel;
 import org.worldOfCube.client.screens.gui.BoxLabelListener;
@@ -16,16 +15,14 @@ public class ScreenPause extends Screen implements BoxLabelListener {
 	private BoxLabel buttonBTM;
 	private BoxLabel buttonOpt;
 	private BoxLabel buttonSave;
-	private World world;
+	private SingleWorld world;
 	private boolean pause;
 	
-	public ScreenPause(UniDisplay display, ClientMain mep, World world, boolean pause) {
+	public ScreenPause(UniDisplay display, ClientMain mep, SingleWorld world, boolean pause) {
 		super(display, mep, ClientMain.BG_R, ClientMain.BG_G, ClientMain.BG_B, 0f);;
 		
 		this.pause = pause;
 		this.world = world;
-		
-		world.setKeyboardLock(true);
 		
 		buttonBTM = new BoxLabel("Back to Main Menu", this);
 		buttonBTM.withInfoText("Go to the Main Menu.\nThe world will be saved.");
@@ -39,17 +36,27 @@ public class ScreenPause extends Screen implements BoxLabelListener {
 		recalcButtons(display.getWidth(), display.getHeight());
 	}
 
-	public void keyPressed(int key) {
-	}
+	/* (non-Javadoc)
+	 * @see org.worldOfCube.client.screens.Screen#handleMousePosition(int, int)
+	 */
+	@Override
+	public void handleKeyEvent(int keyCode, char keyChar, boolean down) {}
 
-	public void keyReleased(int key) {
-	}
+	/* (non-Javadoc)
+	 * @see org.worldOfCube.client.screens.Screen#handleMousePosition(int, int)
+	 */
+	@Override
+	public void handleMouseEvent(int mousex, int mousey, int button, boolean down) {}
+	
+	/* (non-Javadoc)
+	 * @see org.worldOfCube.client.screens.Screen#handleMousePosition(int, int)
+	 */
+	@Override
+	public void handleMousePosition(int mousex, int mousey) {}
 	
 	public void tick() {
 		if (!pause) {
-			WrappedMouse.eventHappened();
 			world.tick(1f);
-			WrappedMouse.update();
 		}
 		buttonBack.tick(display);
 		buttonBTM.tick(display);
@@ -68,6 +75,7 @@ public class ScreenPause extends Screen implements BoxLabelListener {
 		buttonBTM.renderTwo();
 		buttonOpt.renderTwo();
 		buttonSave.renderTwo();
+		renderCursor();
 	}
 	
 	public void resize(int neww, int newh) {
@@ -75,7 +83,6 @@ public class ScreenPause extends Screen implements BoxLabelListener {
 	}
 
 	public void screenRemove() {
-		world.setKeyboardLock(false);
 	}
 
 	public void boxPressed(BoxLabel bl) {

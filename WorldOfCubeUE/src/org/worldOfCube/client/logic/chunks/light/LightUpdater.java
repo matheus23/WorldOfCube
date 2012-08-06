@@ -1,10 +1,10 @@
 package org.worldOfCube.client.logic.chunks.light;
 
-import org.lwjgl.input.Keyboard;
 import org.worldOfCube.Log;
 import org.worldOfCube.client.blocks.Block;
 import org.worldOfCube.client.logic.chunks.Chunk;
 import org.worldOfCube.client.logic.chunks.ChunkManager;
+import org.worldOfCube.client.logic.collision.Rectangle;
 import org.worldOfCube.client.res.ResLoader;
 import org.worldOfCube.client.util.debug.PerfMonitor;
 
@@ -129,20 +129,9 @@ public class LightUpdater {
 		updater.interrupt();
 	}
 	
-	public void tick(int wx, int wy, int ww, int wh) {
-		//TODO: remove.
-		Keyboard.poll();
-		while (Keyboard.next()) {
-			char c = Keyboard.getEventCharacter();
-			if (c == '+') {
-				setSunlight(sunlight.getStrength()+0.05f);
-			} else if (c == '-') {
-				setSunlight(sunlight.getStrength()-0.05f);
-			} else if (c == '=') {
-				setSunlight(1f);
-			}
-		}
-		update(wx, wy, ww, wh);
+	public void tick(Rectangle viewport) {
+		// TODO: Add Day/Night-cycle!
+		update(viewport);
 	}
 	
 	/**
@@ -157,15 +146,15 @@ public class LightUpdater {
 	 * @param wh current viewport height in pixels.
 	 * @see org.worldOfCube.client.logic.chunks.Chunk
 	 */
-	private void update(int wx, int wy, int ww, int wh) {
-		int beginx = wx/(cManager.csize*ResLoader.BLOCK_SIZE)-1;
-		int beginy = wy/(cManager.csize*ResLoader.BLOCK_SIZE)-1;
-		int endx = (wx+ww)/(cManager.csize*ResLoader.BLOCK_SIZE)+2;
-		int endy = (wy+wh)/(cManager.csize*ResLoader.BLOCK_SIZE)+2;
+	private void update(Rectangle viewport) {
+		int beginx = (int) (viewport.x/(cManager.getChunkSize()*ResLoader.BLOCK_SIZE)-1);
+		int beginy = (int) (viewport.y/(cManager.getChunkSize()*ResLoader.BLOCK_SIZE)-1);
+		int endx = (int) ((viewport.x+viewport.w)/(cManager.getChunkSize()*ResLoader.BLOCK_SIZE)+2);
+		int endy = (int) ((viewport.x+viewport.h)/(cManager.getChunkSize()*ResLoader.BLOCK_SIZE)+2);
 		beginx = Math.max(0, beginx);
 		beginy = Math.max(0, beginy);
-		endx = Math.min(cManager.size-1, endx);
-		endy = Math.min(cManager.size-1, endy);
+		endx = Math.min(cManager.getSize()-1, endx);
+		endy = Math.min(cManager.getSize()-1, endy);
 		updater.update(beginx, beginy, endx, endy);
 	}
 	
@@ -175,8 +164,8 @@ public class LightUpdater {
 	 * it is really slow for big Worlds.
 	 */
 	private void updateAllSources() {
-		for (int x = 0; x < cManager.size; x++) {
-			for (int y = 0; y < cManager.size; y++) {
+		for (int x = 0; x < cManager.getSize(); x++) {
+			for (int y = 0; y < cManager.getSize(); y++) {
 				Chunk c = cManager.getChunk(x, y);
 				for (int i = 0; i < c.getLightNum(); i++) {
 					updateLightSource(
@@ -207,12 +196,13 @@ public class LightUpdater {
 	 * @param x the current world-space x position the Method is working on, used for the recursive Iteration.
 	 * @param y the current world-space y position the Method is working on, used for the recursive Iteration.
 	 * @param midx the middle world-space x position from the light source.
-	 * @param midy the middle world-space y position from the ligth source.
+	 * @param midy the middle world-space y position from the light source.
 	 * @param walls how much/strong this iteration has gone through walls.
 	 * @param lastLight the last calculated brightness of the caller. 
 	 * @param light a pre-rendered Light to read values from.
 	 */
-	private void recursiveLight(int x, int y, int midx, int midy, float walls, float lastLight, RenderedLight light) {
+	private void recursiveLight(int x, int y, int midx, int midy, 
+			float walls, float lastLight, RenderedLight light) {
 		if (!cManager.isValidPosition(x, y)) return;
 		if (x != midx || y != midy) {
 			Block fg = cManager.getBlock(x, y, true);
@@ -242,8 +232,8 @@ public class LightUpdater {
 	 * @param light the pre-rendered light to use as surface-light.
 	 */
 	private void floodFillLight(RenderedLight light) {
-		for (int cx = 0; cx < cManager.size; cx++) {
-			for (int cy = 0; cy < cManager.size; cy++) {
+		for (int cx = 0; cx < cManager.getSize(); cx++) {
+			for (int cy = 0; cy < cManager.getSize(); cy++) {
 				floodFillLight(cManager.getChunk(cx, cy), light);
 			}
 		}
@@ -261,15 +251,15 @@ public class LightUpdater {
 	 * @param light the pre-rendered surface light to use.
 	 */
 	private void floodFillLight(Chunk c, RenderedLight light) {
-		for (byte x = 0; x < cManager.csize; x++) {
-			for (byte y = 0; y < cManager.csize; y++) {
+		for (byte x = 0; x < cManager.getChunkSize(); x++) {
+			for (byte y = 0; y < cManager.getChunkSize(); y++) {
 				if (c.getLocalBlock(x, y, true) == null
 						&& c.getLocalBlock(x, y, false) == null) {
 					if (hasSurrounding(c, x, y, false)
 							|| hasSurrounding(c, x, y, true)) {
 						updateLightSource(
-								c.getX()*cManager.csize+x, 
-								c.getY()*cManager.csize+y, 
+								c.getX()*cManager.getChunkSize()+x, 
+								c.getY()*cManager.getChunkSize()+y, 
 								light);
 					}
 					c.setLight(x, y, light.getStrength(), false);

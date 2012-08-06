@@ -13,7 +13,7 @@ public class Log {
 	private long startupTime;
 	
 	private Log() {
-		// TODO: Prepare for release:
+		// TODO: Prepare for release: (or maybe not change the streams?)
 		err = System.err;
 		out = System.out;
 		startupTime = TimeUtil.ms();

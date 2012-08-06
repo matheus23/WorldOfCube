@@ -2,7 +2,6 @@ package org.worldOfCube.client.logic.collision;
 
 import org.worldOfCube.client.logic.chunks.World;
 
-
 public class SideManager {
 	
 	public static final int TOP = 0;

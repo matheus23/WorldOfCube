@@ -26,14 +26,6 @@ public class ComponentMovingLight {
 			return comp.y;
 		}
 		
-		public int chunkX() {
-			return comp.x % world.getChunkManager().csize;
-		}
-		
-		public int chunkY() {
-			return comp.y % world.getChunkManager().csize;
-		}
-		
 		public RenderedLight getLight() {
 			return light;
 		}
@@ -41,17 +33,15 @@ public class ComponentMovingLight {
 	}
 	
 	private Chunk lastChunk;
-	private World world;
 	private MovingLightSource light;
 	private int x, y;
 	
-	public ComponentMovingLight(World world, RenderedLight rLight) {
-		this.world = world;
+	public ComponentMovingLight(RenderedLight rLight) {
 		this.light = new MovingLightSource(this, rLight);
 	}
 	
-	private Chunk computeChunk(int x, int y) {
-		int pixelsPerChunk = ResLoader.BLOCK_SIZE*world.getChunkManager().csize;
+	private Chunk computeChunk(int x, int y, World world) {
+		int pixelsPerChunk = ResLoader.BLOCK_SIZE*world.getChunkManager().getChunkSize();
 		int chunkx = x / pixelsPerChunk;
 		int chunky = y / pixelsPerChunk;
 		return world.getChunkManager().getChunk(chunkx, chunky);
@@ -61,10 +51,10 @@ public class ComponentMovingLight {
 	 * @param x pixel-space world x coordinate.
 	 * @param y pixel-space world y coordinate.
 	 */
-	public void tick(int x, int y) {
+	public void tick(int x, int y, World world) {
 		this.x = x;
 		this.y = y;
-		Chunk newChunk = computeChunk(x, y);
+		Chunk newChunk = computeChunk(x, y, world);
 		if (lastChunk == null) {
 			newChunk.registerLight(light);
 		} else if (!newChunk.equals(lastChunk)) {

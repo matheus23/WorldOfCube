@@ -16,7 +16,7 @@ import org.worldOfCube.client.ClientMain;
 import org.worldOfCube.client.blocks.Block;
 import org.worldOfCube.client.logic.chunks.Chunk;
 import org.worldOfCube.client.logic.chunks.ChunkManager;
-import org.worldOfCube.client.logic.chunks.World;
+import org.worldOfCube.client.logic.chunks.SingleplayerWorldTHEFUCK;
 
 public class WorldViewer extends Canvas implements KeyListener, MouseListener, MouseMotionListener {
 	private static final long serialVersionUID = 7500069017332241382L;
@@ -29,7 +29,7 @@ public class WorldViewer extends Canvas implements KeyListener, MouseListener, M
 	
 	private static final Color chunkSelectionColor = new Color(0xc60027);
 	
-	private World world;
+	private SingleplayerWorldTHEFUCK world;
 	private BufferStrategy bs;
 	private Graphics2D bg;
 	private int chunkx;
@@ -62,7 +62,7 @@ public class WorldViewer extends Canvas implements KeyListener, MouseListener, M
 	
 	public void generate(long seed) {
 		// FIXME: Bug, NullPointerException, not loading ResLoader-Sprites in Multiplayer, Creating Inventory.
-		world = new World(null, seed, WORLDSIZE, CHUNKSIZE, "ServerWorld", true);
+		world = new SingleplayerWorldTHEFUCK(null, seed, WORLDSIZE, CHUNKSIZE, "ServerWorld", true);
 		if (isDisplayable()) {
 			render();
 		}
