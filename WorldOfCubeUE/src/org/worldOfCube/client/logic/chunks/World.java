@@ -9,6 +9,7 @@ import org.magicwerk.brownies.collections.MaxList;
 import org.worldOfCube.client.blocks.Block;
 import org.worldOfCube.client.input.InputListener;
 import org.worldOfCube.client.logic.chunks.generation.Generator;
+import org.worldOfCube.client.logic.chunks.light.LightUpdater;
 import org.worldOfCube.client.logic.collision.Rectangle;
 import org.worldOfCube.client.logic.entity.Entity;
 import org.worldOfCube.client.logic.entity.EntityDrop;
@@ -22,32 +23,33 @@ import org.worldOfCube.client.util.list.ImmutableWrappingList;
  *
  */
 public abstract class World implements InputListener {
-	
+
 	public static final double GRAVITY = 2*64*9.81;
 	public static final int MAX_DROPS = 4000;
-	
+
 	public final int totalPix;
 	public final int totalBlocks;
 	public final Random rand;
-	
+
 	protected final Rectangle bounds;
 	protected final Rectangle viewport;
 	protected final String name;
 	protected ChunkManager cManager;
-	
+	protected LightUpdater light;
+
 	protected GapList<Entity> entitys = new GapList<Entity>();
 	protected MaxList<EntityDrop> drops = new MaxList<EntityDrop>(MAX_DROPS);
 	protected HashMap<String, EntityPlayer> players = new HashMap<String, EntityPlayer>();
-	
+
 	/**
 	 * <p>Calls {@link #World(int, int, long, String)} with
-	 * <tt>seed = System.nanoTime() ^ (System.currentTimeMillis() >>> 10)</tt></p> 
+	 * <tt>seed = System.nanoTime() ^ (System.currentTimeMillis() >>> 10)</tt></p>
 	 * @see #World(int, int, long, String)
 	 */
 	public World(int numChunks, int chunkSize, String name) {
 		this(numChunks, chunkSize, System.nanoTime() ^ (System.currentTimeMillis() >>> 10), name);
 	}
-	
+
 	/**
 	 * <p>Creates a new World instance, which will have a <strong>newly generated ChunkManager</strong>,
 	 * which means, that the world will have not previously defined blocks on the Chunks in ChunkManager.</p>
@@ -59,10 +61,6 @@ public abstract class World implements InputListener {
 	public World(int numChunks, int chunkSize, long seed, String name) {
 		// Initialize constructor stuff:
 		this.name = name;
-		// Create ChunkManager with the sizes set in constructor:
-		cManager = new ChunkManager(numChunks, chunkSize);
-		// Generate the world on the new ChunkManager:
-		generateWorld();
 		// Calculate the helper-Constants:
 		//  - totalBlocks: The total size of blocks along the whole world
 		//  - totalPix: The total number of pixels along the whole world
@@ -71,14 +69,18 @@ public abstract class World implements InputListener {
 		// Initialize the bounds of the world and the viewport. viewport = bounds by default.
 		bounds = new Rectangle(0, 0, totalPix, totalPix);
 		viewport = new Rectangle(bounds);
+		// Create ChunkManager with the sizes set in constructor:
+		cManager = new ChunkManager(numChunks, chunkSize);
 		// New Random for getting random numbers.
 		rand = new Random();
+		// Generate the world on the new ChunkManager:
+		generateWorld();
 	}
-	
+
 	/**
 	 * <p>Creates a new World instance, which will have a <strong>previously generated {@link ChunkManager} on it</strong></p>
 	 * <p>You can choose the ChunkManager in the constructor's arguments. The world will
-	 * exactly have the same ChunkManager as the given one. The world will not change the 
+	 * exactly have the same ChunkManager as the given one. The world will not change the
 	 * blocks on the ChunkManager on creation</p>
 	 * @param cManager the ChunkManager with all definitions of Blocks.
 	 * @param name the name of the world.
@@ -99,7 +101,7 @@ public abstract class World implements InputListener {
 		// Initialize Random instance:
 		rand = new Random(System.nanoTime() ^ (System.currentTimeMillis() >>> 10));
 	}
-	
+
 	/**
 	 * <p>This method generates the world. Should be called AFTER the {@link #cManager}
 	 * was created.</p>
@@ -109,6 +111,7 @@ public abstract class World implements InputListener {
 	public void generateWorld() {
 		Generator g = new Generator(0.0f, 4f, rand, this);
 		cManager.create(g); // Creates the blocks according to the information from the "Generator".
+		cManager.updateAll();
 	}
 
 	/**
@@ -116,18 +119,18 @@ public abstract class World implements InputListener {
 	 * but does not render.
 	 * @param d the delta time, passed since the last update. Usually gotten from {@link org.worldOfCube.client.screens.Screen#getDelta()}
 	 */
-	public void tick(double d) {
+	protected void tick(double d) {
 		PerfMonitor.startProfile("ENTITY TICK");
 		for (Entity e : entitys) {
 			e.tick(d, this);
 		}
 		PerfMonitor.stopProfile("ENTITY TICK");
 	}
-	
+
 	public abstract void render();
-	
+
 	/**
-	 * <p>Converts the given <tt>xposition</tt> from window-space to 
+	 * <p>Converts the given <tt>xposition</tt> from window-space to
 	 * a world-space position.</p>
 	 * <p>With this you can, for example, convert a mouse click from
 	 * a click position on the window to the actual world position in the
@@ -138,9 +141,9 @@ public abstract class World implements InputListener {
 	public double convertXPosToWorldPos(double xposition) {
 		return viewport.x + xposition;
 	}
-	
+
 	/**
-	 * <p>Converts the given <tt>yposition</tt> from window-space to 
+	 * <p>Converts the given <tt>yposition</tt> from window-space to
 	 * a world-space position.</p>
 	 * <p>With this you can, for example, convert a mouse click from
 	 * a click position on the window to the actual world position in the
@@ -148,39 +151,39 @@ public abstract class World implements InputListener {
 	 * @param xposition the y position to convert.
 	 * @return the converted y position (world-space).
 	 */
-	public double convertYPositionToWorldPosition(double yposition) {
+	public double convertYPosToWorldPos(double yposition) {
 		return viewport.y + yposition;
 	}
-	
+
 	public Rectangle getViewport() {
 		return viewport;
 	}
-	
+
 	public Rectangle getBounds() {
 		return bounds;
 	}
-	
+
 	public List<Entity> getEntitys() {
 		return new ImmutableWrappingList<Entity>(entitys);
 	}
-	
+
 	public EntityPlayer getPlayer(String name) {
 		return players.get(name);
 	}
-	
+
 	public String getName() {
 		return name;
 	}
-	
+
 	public void destroy() {
 	}
-	
+
 	/**
 	 * <p>Removes the given {@link Entity} form the inner-used lists of <tt>Entity</tt>s.</p>
 	 * <p>World caches <tt>Entity</tt>s in multiple Lists and Data Structures. If you call
 	 * this method to remove an <tt>Entity</tt> you can be sure, this Entity will be
 	 * removed entirely. So if no reference to the <tt>Entity</tt> is hold outside, the
-	 * <tt>Entity</tt> will be GCed.</p> 
+	 * <tt>Entity</tt> will be GCed.</p>
 	 * @param e the {@link Entity} to be removed.
 	 */
 	public void removeEntity(Entity e) {
@@ -191,11 +194,11 @@ public abstract class World implements InputListener {
 		}
 		entitys.remove(e);
 	}
-	
+
 	/**
 	 * <p>Adds the given {@link Entity} to the inner-used lists of <tt>Entity</tt>s</p>
 	 * <p>If the <tt>Entity</tt> is an instance of special <tt>Entity</tt>s, for
-	 * example {@link EntityPlayer} or {@link EntityDrop}, then a reference to the 
+	 * example {@link EntityPlayer} or {@link EntityDrop}, then a reference to the
 	 * <tt>Entity</tt> will also be added to these Lists.</p>
 	 * <p>To remove an <tt>Entity</tt>, see {@link #removeEntity(Entity)}</p>
 	 * @param e the {@link Entity} to be added.
@@ -211,7 +214,7 @@ public abstract class World implements InputListener {
 		}
 		entitys.add(e);
 	}
-	
+
 	/**
 	 * <p>Returns, whether the {@link Entity} <tt>e</tt> exists in any of the used Data Structures for
 	 * <tt>Entity</tt>s.</p>
@@ -223,29 +226,32 @@ public abstract class World implements InputListener {
 		if (e == null) throw new NullPointerException("e == null");
 		return entitys.contains(e);
 	}
-	
+
 	public ChunkManager getChunkManager() {
 		return cManager;
 	}
-	
+
+	@Override
 	public void handleKeyEvent(int keyCode, char keyChar, boolean down) {
 		for (Entity e : entitys) {
 			e.handleKeyEvent(keyCode, keyChar, down, this);
 		}
 	}
-	
+
+	@Override
 	public void handleMouseEvent(int mousex, int mousey, int button, boolean down) {
 		for (Entity e : entitys) {
 			e.handleMouseEvent(mousex, mousey, button, down, this);
 		}
 	}
-	
+
+	@Override
 	public void handleMousePosition(int mousex, int mousey) {
 		for (Entity e : entitys) {
 			e.handleMousePosition(mousex, mousey, this);
 		}
 	}
-	
+
 	/**
 	 * @param rect the rect to check the collision with.
 	 * @return whether the rect is intersecting any block in the whole world.

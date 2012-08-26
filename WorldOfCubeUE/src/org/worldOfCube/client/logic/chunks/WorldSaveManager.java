@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.universeengine.display.UniDisplay;
 import org.worldOfCube.Log;
 import org.worldOfCube.client.blocks.Block;
 import org.worldOfCube.client.blocks.BlockID;

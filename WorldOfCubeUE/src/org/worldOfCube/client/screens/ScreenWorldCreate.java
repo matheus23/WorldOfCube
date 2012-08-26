@@ -127,8 +127,6 @@ public class ScreenWorldCreate extends Screen implements BoxLabelListener, BoxIn
 						} else {
 							world = new SingleWorld(new EntityPlayer(0, 0, "Player"), 32, 64, inputSeed.getText().hashCode(), inputName.getText().toString());
 						}
-						world = new SingleWorld(display, 
-								inputSeed.getText().length() == 0 ? System.currentTimeMillis() : inputSeed.getText().toString().hashCode(), 32, 64, inputName.getText().toString(), true);
 						generated = true;
 					}
 					

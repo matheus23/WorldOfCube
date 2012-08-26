@@ -34,9 +34,9 @@ import org.worldOfCube.client.util.StateManager;
 import org.worldOfCube.client.util.opengl.BlockVAO;
 
 public final class ResLoader {
-	
+
 	public static final String res = "org/worldOfCube/resources/";
-	
+
 	/*
 	 * SpriteSheet ID's:
 	 */
@@ -47,16 +47,16 @@ public final class ResLoader {
 	public static final int BLOCK_TREEWOOD = 	4;
 	public static final int BLOCK_LEAVES = 		5;
 	public static final int BLOCK_WOOD = 		6;
-	
+
 	public static final int GUI_BORDER_BLUE = 	32;
 	public static final int GUI_BORDER_NORMAL = 33;
-	
+
 	public static final int GUI_LOADBAR = 		34;
-	
+
 	public static final int GUI_INV_SLOT = 		40;
-	
+
 	public static final int PLAYER_SHEET = 		48;
-	
+
 	/*
 	 * Sprite ID's:
 	 */
@@ -69,27 +69,27 @@ public final class ResLoader {
 	public static final int GUI_BORDER_BL = 6;
 	public static final int GUI_BORDER_B = 7;
 	public static final int GUI_BORDER_BR = 8;
-	
+
 	public static final int GUI_BORDER_S = 16;
-	
+
 	public static final int GUI_INV_SLOT_UNSEL = 0;
 	public static final int GUI_INV_SLOT_SEL = 1;
-	
+
 	public static final int GUI_INV_SLOT_SIZE = 32;
-	
+
 	public static final int GUI_LOADBAR_LEFT = 0;
 	public static final int GUI_LOADBAR_RIGHT = 1;
 	public static final int GUI_LOADBAR_MID = 2;
-	
+
 	public static final int ARM = 0;
 	public static final int HEAD = 1;
 	public static final int BODY = 2;
 	public static final int LEG_FRONT = 3;
 	public static final int LEG_BACK = 4;
 	public static final int HEAD_MINI = 5;
-	
+
 	public static final int BLOCK_SIZE = 16;
-	
+
 	public static final byte ALONE = 0;
 	public static final byte TOP = 1;
 	public static final byte BOTTOM = 2;
@@ -106,17 +106,17 @@ public final class ResLoader {
 	public static final byte BORDER_LEFT = 13;
 	public static final byte BORDER_RIGHT = 14;
 	public static final byte FILLED = 15;
-	
+
 	public static final int NUM_BLOCK_TYPES = 16;
-	
+
 	private static SpriteSheet[] sheets = new SpriteSheet[64];
 	private static BlockVAO[] blocks = new BlockVAO[NUM_BLOCK_TYPES];
-	
+
 	public static UniTexture guiBackground;
 	// Titlescreen-Background
 	public static UniTexture tsBackground;
-	public static UniTexture cursor;
-	
+	//	public static UniTexture cursor;
+
 	public static void load() {
 		Log.out(ResLoader.class, "Using texture rect = " + StateManager.isUsingTexRect());
 		UniTextureLoader.flipImages = false;
@@ -135,23 +135,23 @@ public final class ResLoader {
 		splitUp(sheets[BLOCK_TREEWOOD  ]);
 		splitUp(sheets[BLOCK_LEAVES    ]);
 		splitUp(sheets[BLOCK_WOOD      ]);
-		
+
 		loadBlockRenderers();
-		
+
 		sheets[PLAYER_SHEET] = new SpriteSheet(res + "sprites/player/mike_ripped.png", 6, StateManager.isUsingTexRect());
 		splitPlayerSprite(sheets[PLAYER_SHEET]);
-		
+
 		sheets[GUI_BORDER_BLUE] = new SpriteSheet(res + "gui/border_blue.png", 9, StateManager.isUsingTexRect());
 		sheets[GUI_BORDER_NORMAL] = new SpriteSheet(res + "gui/border_normal.png", 9, StateManager.isUsingTexRect());
 		splitUpGUIBorder(sheets[GUI_BORDER_BLUE]);
 		splitUpGUIBorder(sheets[GUI_BORDER_NORMAL]);
-		
+
 		sheets[GUI_LOADBAR] = new SpriteSheet(res + "gui/loadbar.png", 3, StateManager.isUsingTexRect());
 		splitUpGUILoadBar(sheets[GUI_LOADBAR]);
-		
+
 		sheets[GUI_INV_SLOT] = new SpriteSheet(res + "gui/inv_tile.png", 2, StateManager.isUsingTexRect());
 		splitUpGUIInvSlots(sheets[GUI_INV_SLOT]);
-		
+
 		glEnable(GL_TEXTURE_2D);
 		String loadpath = res + "gui/backgroundtile.png";
 		InputStream stream = Thread.currentThread().getContextClassLoader().getResourceAsStream(loadpath);
@@ -173,19 +173,19 @@ public final class ResLoader {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, pack.width, pack.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pack.data);
 		guiBackground = new UniTexture(id, pack.width, pack.height);
 		glBindTexture(GL_TEXTURE_2D, 0);
-		
-		cursor = loadTex(res + "Cursor.png", false);
+
+		//		cursor = loadTex(res + "Cursor.png", false);
 	}
-	
+
 	public static void loadTitle() {
 		tsBackground = loadTex(res + "WorldOfCubeTitlescreen.png", false);
 	}
-	
+
 	public static void unloadTitle() {
 		tsBackground.delete();
 		tsBackground = null;
 	}
-	
+
 	public static void unload() {
 		for (int i = 0; i < sheets.length; i++) {
 			if (sheets[i] != null) {
@@ -195,7 +195,7 @@ public final class ResLoader {
 		}
 		guiBackground.delete();
 	}
-	
+
 	private static void splitPlayerSprite(SpriteSheet sheet) {
 		sheet.giveSprite(ARM, 			 0,  0,  7, 13);
 		sheet.giveSprite(HEAD, 			 7,  0, 26, 29);
@@ -204,7 +204,7 @@ public final class ResLoader {
 		sheet.giveSprite(LEG_BACK, 		47, 13,  9, 13);
 		sheet.giveSprite(HEAD_MINI, 	33, 19, 15, 15);
 	}
-	
+
 	private static void splitUp(SpriteSheet sheet) {
 		sheet.giveSprite(ALONE				,  0f,  0f, BLOCK_SIZE, BLOCK_SIZE);
 		sheet.giveSprite(CORNER_TOPLEFT		, 16f,  0f, BLOCK_SIZE, BLOCK_SIZE);
@@ -223,13 +223,13 @@ public final class ResLoader {
 		sheet.giveSprite(VPIPE				, 32f, 48f, BLOCK_SIZE, BLOCK_SIZE);
 		sheet.giveSprite(HPIPE				, 48f, 48f, BLOCK_SIZE, BLOCK_SIZE);
 	}
-	
+
 	private static void loadBlockRenderers() {
 		for (int i = 0; i < NUM_BLOCK_TYPES; i++) {
 			blocks[i] = new BlockVAO(i);
 		}
 	}
-	
+
 	private static void splitUpGUIBorder(SpriteSheet sheet) {
 		sheet.giveSprite(GUI_BORDER_TL,	 0,  0,  GUI_BORDER_S, GUI_BORDER_S);
 		sheet.giveSprite(GUI_BORDER_T,	16,  0,  GUI_BORDER_S, GUI_BORDER_S);
@@ -241,18 +241,18 @@ public final class ResLoader {
 		sheet.giveSprite(GUI_BORDER_B,	16,  32, GUI_BORDER_S, GUI_BORDER_S);
 		sheet.giveSprite(GUI_BORDER_BR,	32,  32, GUI_BORDER_S, GUI_BORDER_S);
 	}
-	
+
 	private static void splitUpGUIInvSlots(SpriteSheet sheet) {
 		sheet.giveSprite(GUI_INV_SLOT_UNSEL, 0, 0, GUI_INV_SLOT_SIZE, GUI_INV_SLOT_SIZE);
 		sheet.giveSprite(GUI_INV_SLOT_SEL, 0, GUI_INV_SLOT_SIZE, GUI_INV_SLOT_SIZE, GUI_INV_SLOT_SIZE);
 	}
-	
+
 	private static void splitUpGUILoadBar(SpriteSheet sheet) {
 		sheet.giveSprite(GUI_LOADBAR_LEFT, 0, 0, 4, 8);
 		sheet.giveSprite(GUI_LOADBAR_MID, 4, 0, 8, 8);
 		sheet.giveSprite(GUI_LOADBAR_RIGHT, 12, 0, 4, 8);
 	}
-	
+
 	public static UniTexture loadTex(String loadpath, boolean texRect) {
 		InputStream stream = Thread.currentThread().getContextClassLoader().getResourceAsStream(loadpath);
 		try {
@@ -264,7 +264,7 @@ public final class ResLoader {
 			e.printStackTrace();
 		}
 		DecodePack pack = UniTextureLoader.loadImageBufferPNG(stream);
-		
+
 		glEnable(GL_TEXTURE_2D);
 		int id = glGenTextures();
 		glBindTexture(texRect ? GL_TEXTURE_RECTANGLE_ARB : GL_TEXTURE_2D, id);
@@ -275,22 +275,22 @@ public final class ResLoader {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		}
-		glTexImage2D(texRect ? GL_TEXTURE_RECTANGLE_ARB : GL_TEXTURE_2D, 0, GL_RGBA, 
-				pack.width, pack.height, 
+		glTexImage2D(texRect ? GL_TEXTURE_RECTANGLE_ARB : GL_TEXTURE_2D, 0, GL_RGBA,
+				pack.width, pack.height,
 				0, GL_RGBA, GL_UNSIGNED_BYTE, pack.data);
 		glBindTexture(texRect ? GL_TEXTURE_RECTANGLE_ARB : GL_TEXTURE_2D, 0);
-		
+
 		return new UniTexture(id, pack.width, pack.height);
 	}
-	
+
 	public static Sprite get(int spritesheet, int sprite) {
 		return sheets[spritesheet].getSprite(sprite);
 	}
-	
+
 	public static BlockVAO getBlockRenderer(int borderID) {
 		return blocks[borderID];
 	}
-	
+
 	public static BufferedImage loadBufferedImage(String path) {
 		BufferedImage copy = null;
 		try {
@@ -307,5 +307,5 @@ public final class ResLoader {
 		}
 		return copy;
 	}
-	
+
 }

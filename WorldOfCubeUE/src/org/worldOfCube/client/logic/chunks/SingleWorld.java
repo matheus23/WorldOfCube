@@ -30,62 +30,67 @@ import org.worldOfCube.client.util.Config;
  *
  */
 public class SingleWorld extends World {
-	
+
 	protected Entity watching;
 	protected EntityPlayer player;
-	protected LightUpdater light;
-	
+
 	/**
 	 * @see World#World(int, int, long, String)
 	 */
-	public SingleWorld(EntityPlayer ep, int numChunks, int chunkSize, long seed, String name) {
+	public SingleWorld(EntityPlayer ep, int numChunks, int chunkSize, long seed, String name, UniDisplay display) {
 		super(numChunks, chunkSize, seed, name);
-		initialize(ep);
+		initialize(ep, display);
 	}
-	
+
 	/**
 	 * @see World#World(int, int, String)
 	 */
-	public SingleWorld(EntityPlayer ep, int numChunks, int chunkSize, String name) {
+	public SingleWorld(EntityPlayer ep, int numChunks, int chunkSize, String name, UniDisplay display) {
 		super(numChunks, chunkSize, name);
-		initialize(ep);
+		initialize(ep, display);
 	}
-	
+
 	/**
 	 * @see World#World(ChunkManager, String)
 	 */
-	public SingleWorld(EntityPlayer ep, ChunkManager cManager, String name) {
+	public SingleWorld(EntityPlayer ep, ChunkManager cManager, String name, UniDisplay display) {
 		super(cManager, name);
-		initialize(ep);
+		initialize(ep, display);
 	}
-	
-	protected void initialize(EntityPlayer ep) {
+
+	protected void initialize(EntityPlayer ep, UniDisplay display) {
 		// Setup stuff with the given Player Entity, so it is set as player and
 		// will be followed by the viewport when moving around the world.
 		// See the Javadoc of these methods for more information.
+		addEntity(ep);
 		setPlayer(ep);
 		setWatchingEntity(ep);
 		light = new LightUpdater(cManager);
+
+		// Calculate width and height of the viewport:
+		viewport.w = display.getWidth();
+		viewport.h = display.getHeight();
 	}
 
 	public void tick(double delta, UniDisplay display) {
 		super.tick(delta);
+		// Calculate width and height of the viewport:
+		viewport.w = display.getWidth();
+		viewport.h = display.getHeight();
+
 		if (watching != null) { // If there is something to be watched
-			// Calculate width and height of the viewport fist, before 
-			viewport.w = display.getWidth();
-			viewport.h = display.getHeight();
 			// Set the viewport position to follow the "watching" entity.
 			viewport.x = Math.max( // Limit to 0 (= lower limit)
-					0, 
+					0,
 					Math.min( // Limit to totalPix-screen.w (= higher Limit)
-							totalPix-viewport.w, 
+							totalPix-viewport.w,
 							watching.midx()-(display.getWidth()/2)));
 			viewport.y = Math.max( // Limit to 0 (= lower limit)
-					0, 
+					0,
 					Math.min( // Limit to totalPix-screen.h (= higher Limit)
-							totalPix-viewport.h, 
+							totalPix-viewport.h,
 							watching.midy()-(display.getHeight()/2)));
-		} else { 
+		} else {
 			// If there is nothing to be watched, then we need to follow another track.
 			// We now need to keep sure that upon resizing, whatever was watched before
 			// and now is in the middle, will be in the middle after resizing too.
@@ -133,45 +138,55 @@ public class SingleWorld extends World {
 		{
 			glTranslatef((float)-viewport.x, (float)-viewport.y, 0f);
 			glColor3f(1f, 1f, 1f);
-			
+
 			boolean vaorend = Config.get("block_rendering").equals("vao");
+			vaorend = false; // TODO: Remove!
 			if (vaorend) {
 				glEnableClientState(GL_VERTEX_ARRAY);
 				glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 				glEnableClientState(GL_COLOR_ARRAY);
 			}
-			
+
 			cManager.renderChunks(viewport);
 
-			glDisableClientState(GL_VERTEX_ARRAY);
-			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-			glDisableClientState(GL_COLOR_ARRAY);
-			
+			if (vaorend) {
+				glDisableClientState(GL_VERTEX_ARRAY);
+				glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+				glDisableClientState(GL_COLOR_ARRAY);
+			}
+
 			for (int i = 0; i < entitys.size(); i++) {
 				entitys.get(i).render(this);
 			}
 		}
 		glPopMatrix();
+		// Set the color stuff back to wonderful white:
 		glColor3f(1f, 1f, 1f);
+		// Render the inventory, if existing:
+		if (player != null && player.getInventory() != null) {
+			player.getInventory().render();
+		}
+
 		if (Config.get("debug").equals("on")) {
 			GLFont.render(10f, 30f, GLFont.ALIGN_LEFT, entitys.size() + " entitys.", 10);
 		}
 	}
-	
+
 	/**
 	 * <p>Increases the functionality of {@link World#removeEntity(Entity)}, so no "memory leaks" are created.</p>
 	 * @see World#removeEntity(Entity)
 	 */
+	@Override
 	public void removeEntity(Entity e) {
 		if (e == player) {
 			player = null;
 		}
 		super.removeEntity(e);
 	}
-	
+
 	/**
 	 * <p>Sets the {@link EntityPlayer} used as Player to <tt>e</tt></p>
-	 * <p>This method includes adding the <tt>Entity</tt> to the other 
+	 * <p>This method includes adding the <tt>Entity</tt> to the other
 	 * Data Structures from {@link World}. If you want to remove the player
 	 * entirely, use {@link #removeEntity(Entity)} with the Player-Entity as
 	 * argument.</p>
@@ -182,14 +197,14 @@ public class SingleWorld extends World {
 		if (e == null) throw new NullPointerException("e == null");
 		player = e;
 	}
-	
+
 	/**
 	 * @return the {@link EntityPlayer} set by {@link #setPlayer(EntityPlayer)}
 	 */
 	public EntityPlayer getPlayer() {
 		return player;
 	}
-	
+
 	/**
 	 * <p>Set the {@link Entity} to be "watched" to <tt>e</tt></p>
 	 * <p>The "watched" <tt>Entity</tt> of this World will be followed by the Camera.
@@ -201,7 +216,7 @@ public class SingleWorld extends World {
 	public void setWatchingEntity(Entity e) {
 		watching = e;
 	}
-	
+
 	/**
 	 * <p>Returns the {@link Entity} currently watched.</p>
 	 * <p>Set the <tt>Entity</tt> to be watched with {@link #setWatchingEntity(Entity)}</p>
@@ -211,11 +226,12 @@ public class SingleWorld extends World {
 	public Entity getWatchingEntity() {
 		return watching;
 	}
-	
+
 	public float getClearColorRed() { return ClientMain.BG_R * light.getSunlight().getStrength(); }
 	public float getClearColorGreen() { return ClientMain.BG_G * light.getSunlight().getStrength(); }
 	public float getClearColorBlue() { return ClientMain.BG_B * light.getSunlight().getStrength(); }
-	
+
+	@Override
 	public void destroy() {
 		light.destroy();
 	}

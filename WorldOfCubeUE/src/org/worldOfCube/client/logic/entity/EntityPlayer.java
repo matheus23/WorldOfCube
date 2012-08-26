@@ -12,7 +12,7 @@ import org.worldOfCube.client.util.vecmath.FastMath;
 import org.worldOfCube.client.util.vecmath.Vec;
 
 public class EntityPlayer extends Entity {
-	
+
 	public static final double JUMP_SPEED = 500.0;
 	public static final int LEFT = 0;
 	public static final int RIGHT = 1;
@@ -22,20 +22,20 @@ public class EntityPlayer extends Entity {
 	private boolean onBottom;
 	private boolean moving;
 	private int dir;
-	private Bone legFront = new Bone(ResLoader.get(ResLoader.PLAYER_SHEET, ResLoader.LEG_FRONT), 
-					10f, 4f, 2f, 9f, 14f);
-	private Bone legBack = new Bone(ResLoader.get(ResLoader.PLAYER_SHEET, ResLoader.LEG_BACK), 
-					10f, 6f, 2f, 9f, 14f);
+	private Bone legFront = new Bone(ResLoader.get(ResLoader.PLAYER_SHEET, ResLoader.LEG_FRONT),
+			10f, 4f, 2f, 9f, 14f);
+	private Bone legBack = new Bone(ResLoader.get(ResLoader.PLAYER_SHEET, ResLoader.LEG_BACK),
+			10f, 6f, 2f, 9f, 14f);
 	private Bone toPelvis = new Bone(null,
-					10f, 0f, 0f, 0f, 0f, legBack, legFront);
-	private Bone body = new Bone(ResLoader.get(ResLoader.PLAYER_SHEET, ResLoader.BODY), 
-					4f, 7f, 4f, 13f, 18f, toPelvis);
+			10f, 0f, 0f, 0f, 0f, legBack, legFront);
+	private Bone body = new Bone(ResLoader.get(ResLoader.PLAYER_SHEET, ResLoader.BODY),
+			4f, 7f, 4f, 13f, 18f, toPelvis);
 	private Bone arm = new Bone(ResLoader.get(ResLoader.PLAYER_SHEET, ResLoader.ARM),
-					11f, 3f, 2f, 7f, 13f);
-	private Bone head = new Bone(ResLoader.get(ResLoader.PLAYER_SHEET, ResLoader.HEAD), 
-					8f, 15f, 25f, 26f, 29f, body, arm);
+			11f, 3f, 2f, 7f, 13f);
+	private Bone head = new Bone(ResLoader.get(ResLoader.PLAYER_SHEET, ResLoader.HEAD),
+			8f, 15f, 25f, 26f, 29f, body, arm);
 	private Skeleton skel = new Skeleton(0, 0, head);
-	
+
 	private float legFrontTime = 0f;
 	private float legBackTime = (float)Math.PI;
 	private boolean pressedG = false;
@@ -43,7 +43,7 @@ public class EntityPlayer extends Entity {
 	private final String name;
 	private double lastMouseX;
 	private double lastMouseY;
-	
+
 	private ComponentInventory compInv;
 
 	public EntityPlayer(double x, double y, String name) {
@@ -54,6 +54,7 @@ public class EntityPlayer extends Entity {
 		compInv = new ComponentInventory(new Inventory());
 	}
 
+	@Override
 	public void tick(double delta, World world) {
 		if (Keyboard.isKeyDown(Keyboard.KEY_G) && !pressedG) {
 			pressedG = true;
@@ -82,19 +83,19 @@ public class EntityPlayer extends Entity {
 		} else {
 			moving = false;
 			onBottom = !positionEmpty(0f, 1f, world);
-	
+
 			calcGravity(delta, world);
-	
+
 			move(dx*delta, dy*delta, world);
-		}	
+		}
 		clipPosition(world);
-		
+
 		skel.tick(rect.x+13f, rect.y+6f+(moving && onBottom ? (float)Math.sin(time) : 0f));
-		
+
 		Vec v = new Vec(skel.getX(), skel.getY(), lastMouseX, lastMouseY);
 		double heading = FastMath.atan2Deg(v.x, v.y);
 		arm.setRotation((dir == RIGHT ? heading : 360f-heading));
-		
+
 		if (onBottom && moving) {
 			legFront.setRotation((float)Math.sin(legFrontTime)*60f);
 			legBack.setRotation((float)Math.sin(legBackTime)*60f);
@@ -112,11 +113,11 @@ public class EntityPlayer extends Entity {
 		compInv.tick(delta);
 		afterTick(delta);
 	}
-	
+
 	public Inventory getInventory() {
 		return compInv.getInv();
 	}
-	
+
 	public final String getName() {
 		return name;
 	}
@@ -144,8 +145,9 @@ public class EntityPlayer extends Entity {
 			dy = 0;
 		}
 	}
-	
-	public void handleKeyEvent(int keyCode, char keyChar, boolean down) {
+
+	@Override
+	public void handleKeyEvent(int keyCode, char keyChar, boolean down, World world) {
 		if (InputManager.isOneOfKeys("right", keyCode) && down) {
 			dx = speed;
 			dir = RIGHT;
@@ -162,19 +164,22 @@ public class EntityPlayer extends Entity {
 			onBottom = false;
 		}
 	}
-	
+
+	@Override
 	public void handleMousePosition(int mousex, int mousey, World world) {
-		//TODO: Handle lastMouseX and lastMouseY somehow here.
+		lastMouseX = world.convertXPosToWorldPos(mousex);
+		lastMouseY = world.convertYPosToWorldPos(mousey);
 	}
 
+	@Override
 	public void render(World world) {
-		skel.render(dir == RIGHT, 
+		skel.render(dir == RIGHT,
 				world.getChunkManager().getLightness(
-				(int)(skel.getX()/ResLoader.BLOCK_SIZE), 
-				(int)(skel.getY()/ResLoader.BLOCK_SIZE), true));
-		compInv.render();
+						(int)(skel.getX()/ResLoader.BLOCK_SIZE),
+						(int)(skel.getY()/ResLoader.BLOCK_SIZE), true));
 	}
-	
+
+	@Override
 	public boolean colliding(World world) {
 		return super.colliding(world) && !godmode;
 	}

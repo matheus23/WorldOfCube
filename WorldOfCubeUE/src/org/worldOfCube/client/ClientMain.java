@@ -11,12 +11,9 @@ import static org.lwjgl.opengl.GL11.GL_NICEST;
 import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
 import static org.lwjgl.opengl.GL11.GL_PERSPECTIVE_CORRECTION_HINT;
 import static org.lwjgl.opengl.GL11.GL_PROJECTION;
-import static org.lwjgl.opengl.GL11.GL_QUADS;
-import static org.lwjgl.opengl.GL11.GL_QUAD_STRIP;
 import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL11.GL_VERTEX_ARRAY;
-import static org.lwjgl.opengl.GL11.glBegin;
 import static org.lwjgl.opengl.GL11.glBlendFunc;
 import static org.lwjgl.opengl.GL11.glClearColor;
 import static org.lwjgl.opengl.GL11.glClearDepth;
@@ -24,14 +21,11 @@ import static org.lwjgl.opengl.GL11.glCullFace;
 import static org.lwjgl.opengl.GL11.glDisable;
 import static org.lwjgl.opengl.GL11.glEnable;
 import static org.lwjgl.opengl.GL11.glEnableClientState;
-import static org.lwjgl.opengl.GL11.glEnd;
 import static org.lwjgl.opengl.GL11.glHint;
 import static org.lwjgl.opengl.GL11.glIsEnabled;
 import static org.lwjgl.opengl.GL11.glLoadIdentity;
 import static org.lwjgl.opengl.GL11.glMatrixMode;
 import static org.lwjgl.opengl.GL11.glOrtho;
-import static org.lwjgl.opengl.GL11.glTexCoord2f;
-import static org.lwjgl.opengl.GL11.glVertex2f;
 import static org.lwjgl.opengl.GL11.glViewport;
 
 import java.awt.Dimension;
@@ -57,12 +51,13 @@ import org.universeengine.util.UniPrint;
 import org.universeengine.util.input.UniInput;
 import org.universeengine.util.input.UniInputListener;
 import org.worldOfCube.Log;
-import org.worldOfCube.client.input.InputManager;
 import org.worldOfCube.client.input.WrappedMouse;
+import org.worldOfCube.client.logic.chunks.SingleWorld;
+import org.worldOfCube.client.logic.entity.EntityPlayer;
 import org.worldOfCube.client.res.GLFont;
 import org.worldOfCube.client.res.ResLoader;
 import org.worldOfCube.client.screens.Screen;
-import org.worldOfCube.client.screens.ScreenMenu;
+import org.worldOfCube.client.screens.ScreenGame;
 import org.worldOfCube.client.util.Config;
 import org.worldOfCube.client.util.DisplayModeManager;
 import org.worldOfCube.client.util.StateManager;
@@ -72,26 +67,27 @@ import org.worldOfCube.client.util.debug.PerfMonitor;
 public class ClientMain implements UniverseEngineEntryPoint, UniInputListener {
 
 	public static final String screendir = "screens";
-	
+
 	public static final float BG_R = 0.57f;
 	public static final float BG_G = 0.73f;
 	public static final float BG_B = 1f;
 
 	public final boolean limitFPS = false;
 	public boolean vsync = Config.get("vsync").equals("on");
-	
+
 	private UniAWTDisplay display;
 	private UniLoop loop;
 	private UniInput in;
 	private Screen screen;
 	private boolean fullscreen;
-	
+
 	public ClientMain() {
 		display = new UniAWTDisplay(800, 600, "World of Cube");
 		loop = new UniLoop(this, display);
 		loop.start();
 	}
-	
+
+	@Override
 	public void keyPressed(int key) {
 		if (key == Keyboard.KEY_F2) {
 			long time = TimeUtil.ms();
@@ -105,7 +101,7 @@ public class ClientMain implements UniverseEngineEntryPoint, UniInputListener {
 			String screenpath = null;
 			int i = 0;
 			File f = new File(screenname + i + imageformat);
-			
+
 			do {
 				f = new File(screenname + i + imageformat);
 				screenpath = screenname + i + imageformat;
@@ -124,33 +120,33 @@ public class ClientMain implements UniverseEngineEntryPoint, UniInputListener {
 			fullscreen = !fullscreen;
 			setFullscreen(fullscreen);
 		}
-		screen.keyPressed(key);
 	}
-	
+
+	@Override
 	public void keyReleased(int key) {
 		if (key == Keyboard.KEY_H) {
-			Log.out(this, "Memory used: " + memoryInMB() + "." + (memoryInKB()%1000) + 
+			Log.out(this, "Memory used: " + memoryInMB() + "." + (memoryInKB()%1000) +
 					" MB (in bytes: " + memoryInBytes() + ")");
 		}
-		screen.keyReleased(key);
 	}
-	
+
 	private long memoryInMB() {
 		return memoryInKB()/1024;
 	}
-	
+
 	private long memoryInKB() {
 		return (Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory())/1024;
 	}
-	
+
 	private long memoryInBytes() {
 		return (Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory());
 	}
 
+	@Override
 	public void start() {
 		Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
-		
-		// Check, whether to use GL_TEXTURE_2D or GL_TEXTURE_RECTANGLE_ARB 
+
+		// Check, whether to use GL_TEXTURE_2D or GL_TEXTURE_RECTANGLE_ARB
 		if (!GLContext.getCapabilities().GL_ARB_texture_rectangle) {
 			System.err.println("WARING: GL_ARB_texture_rectangle is a missing extension. Using GL_TEXTURE_2D now.");
 			StateManager.useTexRect(false);
@@ -162,82 +158,84 @@ public class ClientMain implements UniverseEngineEntryPoint, UniInputListener {
 		// Load all resources.
 		ResLoader.load();
 		GLFont.load();
-		
+
 		display.centerOnDefaultDisplay();
 		display.getFrame().setMinimumSize(new Dimension(640, 480));
 		display.setVisible(true);
-		
+
 		try {
 			Mouse.setNativeCursor(new Cursor(16, 16, 0, 0, 1, BufferUtils.createIntBuffer(16*16), BufferUtils.createIntBuffer(1)));
 		} catch (LWJGLException e) {
 			e.printStackTrace();
 		}
-		
+
 		Display.setVSyncEnabled(vsync);
 		loop.setDelay(limitFPS);
 		UniPrint.enabled = false;
 		WrappedMouse.giveDisplay(display);
-		
+
 		in = new UniInput(this);
-		screen = new ScreenMenu(display, this);
+		//screen = new ScreenMenu(display, this); TODO: Change back!
+		screen = new ScreenGame(display, this, new SingleWorld(new EntityPlayer(0, 0, "Player"), 32, 64, "SingleWorld", display));
 		setupViewport(display.getWidth(), display.getHeight());
 		glClearColor(BG_R, BG_G, BG_B, 0f);
 		glClearDepth(1f);
 		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-		
+
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_FRONT);
-		
+
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		
+
 		glDisable(GL_DEPTH_TEST);
-		
+
 		glEnable(GL_TEXTURE_RECTANGLE_ARB);
 		glEnable(GL_TEXTURE_2D);
-		
+
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glEnableClientState(GL_COLOR_ARRAY);
 	}
-	
+
+	@Override
 	public void tick() {
-		PerfMonitor.startProfile("INPUT");
-		InputManager.update();
-		PerfMonitor.stopProfile("INPUT");
 		PerfMonitor.startProfile("TICK");
 		in.update();
+		screen.handleEvents();
 		screen.tick();
 		PerfMonitor.stopProfile("TICK");
 	}
 
+	@Override
 	public void render() {
 		PerfMonitor.startProfile("RENDER");
 		screen.render();
-		
-		boolean save = StateManager.isUsingTexRect();
-		StateManager.useTexRect(false);
-		StateManager.bindTexture(ResLoader.cursor);
-		StateManager.useTexRect(save);
-		
-		glBegin(GL_QUADS);
-		{
-			glVertex2f(WrappedMouse.getX(), WrappedMouse.getY());
-			glTexCoord2f(0f, 0f);
-			glVertex2f(WrappedMouse.getX()+ResLoader.cursor.getWidth(), WrappedMouse.getY());
-			glTexCoord2f(1f, 0f);
-			glVertex2f(WrappedMouse.getX()+ResLoader.cursor.getWidth(), WrappedMouse.getY()+ResLoader.cursor.getHeight());
-			glTexCoord2f(1f, 1f);
-			glVertex2f(WrappedMouse.getX(), WrappedMouse.getY()+ResLoader.cursor.getHeight());
-			glTexCoord2f(0f, 1f);
-		}
-		glEnd();
+
+		//		boolean save = StateManager.isUsingTexRect();
+		//		StateManager.useTexRect(false);
+		//		StateManager.bindTexture(ResLoader.cursor);
+		//		StateManager.useTexRect(save);
+		//
+		//		glBegin(GL_QUADS);
+		//		{
+		//			glVertex2f(WrappedMouse.getX(), WrappedMouse.getY());
+		//			glTexCoord2f(0f, 0f);
+		//			glVertex2f(WrappedMouse.getX()+ResLoader.cursor.getWidth(), WrappedMouse.getY());
+		//			glTexCoord2f(1f, 0f);
+		//			glVertex2f(WrappedMouse.getX()+ResLoader.cursor.getWidth(), WrappedMouse.getY()+ResLoader.cursor.getHeight());
+		//			glTexCoord2f(1f, 1f);
+		//			glVertex2f(WrappedMouse.getX(), WrappedMouse.getY()+ResLoader.cursor.getHeight());
+		//			glTexCoord2f(0f, 1f);
+		//		}
+		//		glEnd();
 	}
-	
+
+	@Override
 	public void displayUpdate() {
 		display.update();
 		PerfMonitor.stopProfile("RENDER");
 	}
-	
+
 	public void setScreen(Screen newscreen) {
 		if (screen != null) {
 			screen.screenRemove();
@@ -245,27 +243,31 @@ public class ClientMain implements UniverseEngineEntryPoint, UniInputListener {
 		newscreen.screenPopsUp();
 		this.screen = newscreen;
 	}
-	
+
 	public void setFullscreen(boolean fullscreen) {
 		DisplayModeManager.inst().setDisplayMode(1280, 1024, fullscreen);
 	}
 
+	@Override
 	public void pause() {
 	}
 
+	@Override
 	public void resume() {
 	}
 
+	@Override
 	public void onResize(int oldWidth, int oldHeight, int newWidth,
 			int newHeight) {
 		setupViewport(newWidth, newHeight);
 		screen.resize(newWidth, newHeight);
 	}
 
+	@Override
 	public void end() {
 		ResLoader.unload();
 	}
-	
+
 	public void setupViewport(int width, int height) {
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -273,36 +275,38 @@ public class ClientMain implements UniverseEngineEntryPoint, UniInputListener {
 		glOrtho(0, width, height, 0, -1, 1);
 		glMatrixMode(GL_MODELVIEW);
 	}
-	
+
 	public UniLoop getLoop() {
 		return loop;
 	}
-	
+
 	public void setVSync(boolean on) {
 		vsync = on;
 		Display.setVSyncEnabled(vsync);
 	}
-	
+
 	public static void main(String[] args) {
 		System.out.println("Fine.");
 		Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+			@Override
 			public void uncaughtException(Thread thread, Throwable e) {
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				PrintStream ps = new PrintStream(baos);
-				
+
 				e.printStackTrace(ps);
-				
+
 				String msg = baos.toString();
 				ps.close();
-				
+
 				System.err.println(msg);
-				
-				JOptionPane.showMessageDialog(null, 
+
+				JOptionPane.showMessageDialog(null,
 						"Exception occured in Thread " + thread.getName() + ":\n" + msg,
 						"WorldOfCube: Exception occured.", JOptionPane.ERROR_MESSAGE);
 			}
 		});
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+			@Override
 			public void run() {
 				Mouse.setGrabbed(false);
 				Config.save();

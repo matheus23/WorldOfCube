@@ -18,7 +18,7 @@ public class ScreenGame extends Screen {
 
 	public ScreenGame(UniDisplay display, ClientMain mep, String name) {
 		super(display, mep, ClientMain.BG_R, ClientMain.BG_G, ClientMain.BG_B, 0f);
-		world = new SingleWorld(new EntityPlayer(0, 0, "Player"), 32, 64, name);
+		world = new SingleWorld(new EntityPlayer(32768/2, 0, "Player"), 32, 64, name, display);
 	}
 
 	public ScreenGame(UniDisplay display, ClientMain mep, SingleWorld world) {
@@ -26,11 +26,13 @@ public class ScreenGame extends Screen {
 		this.world = world;
 	}
 
+	@Override
 	public void tick() {
 		lastDelta = getDelta();
-		world.tick(lastDelta);
+		world.tick(lastDelta, display);
 	}
 
+	@Override
 	public void render() {
 		red = world.getClearColorRed();// Will be implemented in SingleplayerWorld ONLY!
 		green = world.getClearColorGreen();
@@ -79,12 +81,17 @@ public class ScreenGame extends Screen {
 		world.handleMousePosition(mousex, mousey);
 	}
 
+	@Override
 	public void resize(int neww, int newh) {
+		world.getViewport().w = neww;
+		world.getViewport().h = newh;
 	}
 
+	@Override
 	public void screenRemove() {
 	}
-	
+
+	@Override
 	public String getCaption() {
 		return "Game";
 	}

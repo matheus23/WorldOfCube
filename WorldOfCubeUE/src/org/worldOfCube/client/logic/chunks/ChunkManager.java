@@ -100,7 +100,7 @@ public class ChunkManager {
 		int beginx = (int)(viewport.x/pixelPerChunk);
 		int beginy = (int)(viewport.y/pixelPerChunk);
 		int endx = (int)((viewport.x+viewport.w)/pixelPerChunk)+1;
-		int endy = (int)((viewport.x+viewport.h)/pixelPerChunk)+1;
+		int endy = (int)((viewport.y+viewport.h)/pixelPerChunk)+1;
 		beginx = Math.max(0, beginx);
 		beginy = Math.max(0, beginy);
 		endx = Math.min(size, endx);

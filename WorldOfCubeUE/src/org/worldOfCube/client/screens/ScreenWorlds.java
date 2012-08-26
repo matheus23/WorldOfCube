@@ -53,6 +53,8 @@ public class ScreenWorlds extends Screen implements BoxLabelListener {
 	}
 	
 	public void handleMouseEvent(int mousex, int mousey, int button, boolean down) {}
+	
+	public void handleMousePosition(int mousex, int mousey) {}
 
 	public void tick() {
 		buttonCreate.tick(display);
