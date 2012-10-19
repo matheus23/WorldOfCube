@@ -7,8 +7,8 @@ import static org.lwjgl.opengl.GL11.glTranslatef;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.matheusdev.util.matrix.MatrixN2f;
-import org.matheusdev.util.matrix.MatrixN3o;
+import org.matheusdev.util.matrix.matrix2.MatrixN2f;
+import org.matheusdev.util.matrix.matrix3.MatrixN3o;
 import org.worldOfCube.client.blocks.Block;
 import org.worldOfCube.client.blocks.BlockEarth;
 import org.worldOfCube.client.blocks.BlockRock;
@@ -22,7 +22,7 @@ public class Chunk {
 
 	public static final int EARTH_OFFSET = 128;
 	public static final int EARTH_SHUFFLE = 8;
-	
+
 	public static final int FRONT = 0;
 	public static final int BACK = 1;
 
@@ -102,7 +102,7 @@ public class Chunk {
 
 	/**
 	 * Updates all Blocks in this Chunk.
-	 * This Method is used in the initialization of the 
+	 * This Method is used in the initialization of the
 	 * CunkManager, to make all Blocks be connected to each
 	 * other.
 	 */
@@ -118,7 +118,7 @@ public class Chunk {
 			}
 		}
 	}
-	
+
 	/**
 	 * @param src the LightSource to be tested.
 	 * @return whether the LightSource already exists on
@@ -127,7 +127,7 @@ public class Chunk {
 	public boolean containsLight(LightSource src) {
 		return lights.contains(src);
 	}
-	
+
 	/**
 	 * Adds "src" to the internally used List.
 	 * @param src the LightSoucre to be added.
@@ -135,7 +135,7 @@ public class Chunk {
 	public void registerLight(LightSource src) {
 		lights.add(src);
 	}
-	
+
 	/**
 	 * Removes "src" from the internally used List.
 	 * @param src the LightSoucre to be removed.
@@ -143,14 +143,14 @@ public class Chunk {
 	public void removeLight(LightSource src) {
 		lights.remove(src);
 	}
-	
+
 	/**
 	 * @return how many lights the Chunk currently has.
 	 */
 	public int getLightNum() {
 		return lights.size();
 	}
-	
+
 	/**
 	 * @param ind the index of the LightSource to get.
 	 * @return the LightSource from a internally used List.
@@ -225,7 +225,7 @@ public class Chunk {
 			}
 		}
 	}
-	
+
 	/**
 	 * The Lighting System is double Buffered.
 	 * That makes it possible to Thread it without seeing
@@ -262,7 +262,7 @@ public class Chunk {
 	 * Sets a Local Block in this Chunk at (x, y) to "b".
 	 * At first it destroys the previous block, if existing
 	 * at (x, y). then it calls Block.create with the Chunk's
-	 * this-instance, if the given Block "b", was not created before. 
+	 * this-instance, if the given Block "b", was not created before.
 	 * Finally it adds "b" to the Chunk.
 	 * @param x the chunk-space x position.
 	 * @param y the chunk-space y position.
@@ -371,9 +371,9 @@ public class Chunk {
 			return false;
 		}
 	}
-	
+
 	/**
-	 * Updates a local Block in local chunk-space. If the 
+	 * Updates a local Block in local chunk-space. If the
 	 * (x, y) position is out of range, an ArrayIndexOutOfBoundsException
 	 * will be thrown.
 	 * @param x the chunk-space x position.
@@ -390,7 +390,7 @@ public class Chunk {
 			return false;
 		}
 	}
-	
+
 	/**
 	 * @return the world-chunk-space x position.
 	 */
@@ -450,7 +450,7 @@ public class Chunk {
 
 	/**
 	 * Removes a Block at (x, y) and automatically updates
-	 * in a Diamond-shape around that position, using 
+	 * in a Diamond-shape around that position, using
 	 * {@link #setBlock(int, int, Block, boolean)} and {@link #updateDiamond(int, int)}.
 	 * @param x the chunk-space x position.
 	 * @param y the chunk-space y position.
@@ -471,8 +471,8 @@ public class Chunk {
 	 * is written, so it supports OpenGL 1.1 and lower.
 	 * 
 	 * At first, it pushes the Matrix Stack from OpenGL, which
-	 * will be popped at the end. Then it Translates the 
-	 * Modelview-Matrix by the pixel-space position of this 
+	 * will be popped at the end. Then it Translates the
+	 * Modelview-Matrix by the pixel-space position of this
 	 * Chunk. After that it renders every Block, which is in
 	 * the given viewport, using {@link #renderBlocksAt(int, int)}.
 	 * @param wx viewport x position.
@@ -483,9 +483,9 @@ public class Chunk {
 	public void render(Rectangle viewport) {
 		glPushMatrix();
 		{
-			glTranslatef(x*chunkManager.csize*ResLoader.BLOCK_SIZE, 
+			glTranslatef(x*chunkManager.csize*ResLoader.BLOCK_SIZE,
 					y*chunkManager.csize*ResLoader.BLOCK_SIZE, 0f);
-			
+
 			int totalbx = ((int) viewport.x) / ResLoader.BLOCK_SIZE;
 			int totalby = ((int) viewport.y) / ResLoader.BLOCK_SIZE;
 			int beginx = totalbx - (x * chunkManager.csize);
@@ -496,7 +496,7 @@ public class Chunk {
 			beginy = Math.max(0, beginy);
 			endx = Math.min(chunkManager.csize-1, endx);
 			endy = Math.min(chunkManager.csize-1, endy);
-			
+
 			for (int x = beginx; x <= endx; x++) {
 				for (int y = beginy; y <= endy; y++) {
 					renderBlocksAt(x, y);
@@ -505,7 +505,7 @@ public class Chunk {
 		}
 		glPopMatrix();
 	}
-	
+
 	/**
 	 * This renders a Block with OpenGL at (x, y).
 	 * If (x, y) are not valid positions, the method
@@ -527,21 +527,21 @@ public class Chunk {
 			// Render the block in foreground.
 			blocks.get(x, y, FRONT).render();
 		} else {
-			// If there is no Block in foreground, but a block in the background, 
+			// If there is no Block in foreground, but a block in the background,
 			// we simply render that one.
 			if (blocks.get(x, y, BACK) != null) {
 				blocks.get(x, y, BACK).renderBackground();
 			}
 		}
 	}
-	
+
 	/**
 	 * @return the size of this {@link Chunk}.
 	 */
 	public int getSize() {
 		return chunkManager.csize;
 	}
-	
+
 	/**
 	 * @param bx the chunk-space block x position.
 	 * @param by the chunk-space block y position.
@@ -554,5 +554,5 @@ public class Chunk {
 				|| getLocalBlock(bx, by+1, foreground) != null
 				|| getLocalBlock(bx, by-1, foreground) != null;
 	}
-	
+
 }

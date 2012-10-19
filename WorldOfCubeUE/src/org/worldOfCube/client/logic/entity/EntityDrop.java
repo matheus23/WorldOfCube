@@ -16,10 +16,10 @@ import org.worldOfCube.client.util.Rand;
 import org.worldOfCube.client.util.Var;
 
 public class EntityDrop extends Entity {
-	
+
 	public static final int PIX_SIZE = 8;
 	public static final char LIFE_TIME = 180;
-	
+
 	private Item item;
 	private char invulTime = 0;
 	private boolean collectable = false;
@@ -31,7 +31,7 @@ public class EntityDrop extends Entity {
 		dx = Rand.rangeFloat(4f, r);
 		dy = -(r.nextFloat()*4f);
 	}
-	
+
 	public EntityDrop(Item item, float x, float y, char invulTime) {
 		super(x, y, PIX_SIZE, PIX_SIZE);
 		this.item = item;
@@ -40,15 +40,16 @@ public class EntityDrop extends Entity {
 		dx = Rand.rangeFloat(4f, r);
 		dy = -(r.nextFloat()*4f);
 	}
-	
+
 	public Item getItem() {
 		return item;
 	}
-	
+
 	public boolean isCollectable() {
 		return collectable;
 	}
 
+	@Override
 	public void tick(double delta, World world) {
 		if (time > LIFE_TIME) {
 			world.removeEntity(this);
@@ -56,9 +57,8 @@ public class EntityDrop extends Entity {
 		if (!rect.intersects(world.getBounds())) {
 			world.removeEntity(this);
 		}
-		if (time > (double)(int)invulTime) {
+		if (time > invulTime) {
 			collectable = true;
-			// TODO: Implement collecting of Drops in "World" with a seperate list for Drops and ComonentDropCollector
 		} else {
 			dx *= 0.9f; // De-Acceleration
 			dy += World.GRAVITY*delta;
@@ -67,10 +67,11 @@ public class EntityDrop extends Entity {
 		afterTick(delta);
 	}
 
+	@Override
 	public void render(World world) {
 		if (rect.intersects(world.getViewport())) {
 			Var.col1 = world.getChunkManager().getLightness(
-					(int)(rect.x/ResLoader.BLOCK_SIZE), 
+					(int)(rect.x/ResLoader.BLOCK_SIZE),
 					(int)(rect.y/ResLoader.BLOCK_SIZE), true);
 			Sprite s = BlockID.itemToSprite(item.getID());
 			s.bind();

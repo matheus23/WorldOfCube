@@ -9,7 +9,7 @@ import org.worldOfCube.client.logic.entity.components.ComponentMovingLight;
  *
  */
 public class EntityMouselight extends Entity {
-	
+
 	private ComponentMovingLight light;
 
 	public EntityMouselight(float x, float y, float w, float h) {
@@ -24,14 +24,14 @@ public class EntityMouselight extends Entity {
 	public void tick(double d, World world) {
 		light.tick((int)rect.x, (int)rect.y, world);
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.worldOfCube.client.logic.entity.Entity#handleMousePosition(int, int, org.worldOfCube.client.logic.chunks.World)
 	 */
 	@Override
 	public void handleMousePosition(int mousex, int mousey, World world) {
-		rect.x = world.convertXPosToWorldPos(mousex);
-		rect.y = world.convertXPosToWorldPos(mousey);
+		rect.x = world.convertXToWorld(mousex);
+		rect.y = world.convertYToWorld(mousey);
 	}
 
 	/* (non-Javadoc)

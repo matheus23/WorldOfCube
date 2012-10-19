@@ -6,6 +6,7 @@ import java.util.Random;
 
 import org.magicwerk.brownies.collections.GapList;
 import org.magicwerk.brownies.collections.MaxList;
+import org.matheusdev.util.Dist;
 import org.worldOfCube.client.blocks.Block;
 import org.worldOfCube.client.input.InputListener;
 import org.worldOfCube.client.logic.chunks.generation.Generator;
@@ -17,6 +18,7 @@ import org.worldOfCube.client.logic.entity.EntityPlayer;
 import org.worldOfCube.client.res.ResLoader;
 import org.worldOfCube.client.util.debug.PerfMonitor;
 import org.worldOfCube.client.util.list.ImmutableWrappingList;
+import org.worldOfCube.client.util.vecmath.Vec;
 
 /**
  * @author matheusdev
@@ -25,7 +27,7 @@ import org.worldOfCube.client.util.list.ImmutableWrappingList;
 public abstract class World implements InputListener {
 
 	public static final double GRAVITY = 2*64*9.81;
-	public static final int MAX_DROPS = 4000;
+	public static final int MAX_DROPS = 2000;
 
 	public final int totalPix;
 	public final int totalBlocks;
@@ -39,7 +41,8 @@ public abstract class World implements InputListener {
 
 	protected GapList<Entity> entitys = new GapList<Entity>();
 	protected MaxList<EntityDrop> drops = new MaxList<EntityDrop>(MAX_DROPS);
-	protected HashMap<String, EntityPlayer> players = new HashMap<String, EntityPlayer>();
+	protected GapList<EntityPlayer> players = new GapList<EntityPlayer>();
+	protected HashMap<String, EntityPlayer> playerNames = new HashMap<String, EntityPlayer>();
 
 	/**
 	 * <p>Calls {@link #World(int, int, long, String)} with
@@ -109,9 +112,10 @@ public abstract class World implements InputListener {
 	 * call {@link ChunkManager#create(Generator)} on {@link #cManager}.</p>
 	 */
 	public void generateWorld() {
-		Generator g = new Generator(0.0f, 4f, rand, this);
+		Generator g = new Generator(0.6f, 4f, rand, this);
 		cManager.create(g); // Creates the blocks according to the information from the "Generator".
 		cManager.updateAll();
+		g.generateTrees();
 	}
 
 	/**
@@ -123,6 +127,18 @@ public abstract class World implements InputListener {
 		PerfMonitor.startProfile("ENTITY TICK");
 		for (Entity e : entitys) {
 			e.tick(d, this);
+		}
+		for (int i = 0; i < drops.size(); i++) {
+			EntityDrop drop = drops.get(i);
+			EntityPlayer nearestPlayer = nearestPlayer(drop.midx(), drop.midy());
+
+			if (Dist.root(drop.midx(), drop.midy(), nearestPlayer.midx(), nearestPlayer.midy()) < 64f) {
+				Vec delta = new Vec(drop.midx(), drop.midy(), nearestPlayer.midx(), nearestPlayer.midy());
+				delta.normalize();
+				delta.mul(6f);
+
+				drop.move(delta.x, delta.y, this);
+			}
 		}
 		PerfMonitor.stopProfile("ENTITY TICK");
 	}
@@ -138,7 +154,7 @@ public abstract class World implements InputListener {
 	 * @param xposition the x position to convert.
 	 * @return the converted x position (world-space).
 	 */
-	public double convertXPosToWorldPos(double xposition) {
+	public double convertXToWorld(double xposition) {
 		return viewport.x + xposition;
 	}
 
@@ -151,7 +167,7 @@ public abstract class World implements InputListener {
 	 * @param xposition the y position to convert.
 	 * @return the converted y position (world-space).
 	 */
-	public double convertYPosToWorldPos(double yposition) {
+	public double convertYToWorld(double yposition) {
 		return viewport.y + yposition;
 	}
 
@@ -168,7 +184,7 @@ public abstract class World implements InputListener {
 	}
 
 	public EntityPlayer getPlayer(String name) {
-		return players.get(name);
+		return playerNames.get(name);
 	}
 
 	public String getName() {
@@ -188,7 +204,10 @@ public abstract class World implements InputListener {
 	 */
 	public void removeEntity(Entity e) {
 		if (e instanceof EntityPlayer) {
-			players.remove(e);
+			EntityPlayer ep = (EntityPlayer) e;
+
+			players.remove(ep);
+			playerNames.remove(ep.getName());
 		} else if (e instanceof EntityDrop) {
 			drops.remove(e);
 		}
@@ -207,12 +226,26 @@ public abstract class World implements InputListener {
 		if (e == null) throw new NullPointerException("e == null");
 		if (e instanceof EntityPlayer) {
 			EntityPlayer ep = (EntityPlayer) e;
-			players.put(ep.getName(), ep);
+			playerNames.put(ep.getName(), ep);
+			players.add(ep);
 		} else if (e instanceof EntityDrop) {
 			EntityDrop ed = (EntityDrop) e;
 			drops.add(ed);
 		}
 		entitys.add(e);
+	}
+
+	public EntityPlayer nearestPlayer(double x, double y) {
+		double lastDist = Double.MAX_VALUE;
+		EntityPlayer nearest = null;
+		for (int i = 0; i < players.size(); i++) {
+			double dist = Dist.lin(x, y, players.get(i).midx(), players.get(i).midy());
+			if (dist < lastDist) {
+				lastDist = dist;
+				nearest = players.get(i);
+			}
+		}
+		return nearest;
 	}
 
 	/**

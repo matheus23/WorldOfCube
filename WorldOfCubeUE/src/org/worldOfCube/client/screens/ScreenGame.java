@@ -62,7 +62,7 @@ public class ScreenGame extends Screen {
 			if (keyCode == Keyboard.KEY_V) {
 				mep.vsync = !mep.vsync;
 				Display.setVSyncEnabled(mep.vsync);
-				Log.out(this, "VSync %s", mep.vsync ? "enabled" : "disabled");
+				Log.out("VSync %s", mep.vsync ? "enabled" : "disabled");
 			}
 		}
 		// Now give it to world:

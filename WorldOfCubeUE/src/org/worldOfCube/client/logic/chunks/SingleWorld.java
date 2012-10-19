@@ -15,8 +15,10 @@ import org.worldOfCube.client.ClientMain;
 import org.worldOfCube.client.blocks.Block;
 import org.worldOfCube.client.logic.chunks.light.LightUpdater;
 import org.worldOfCube.client.logic.entity.Entity;
+import org.worldOfCube.client.logic.entity.EntityMouselight;
 import org.worldOfCube.client.logic.entity.EntityPlayer;
 import org.worldOfCube.client.res.GLFont;
+import org.worldOfCube.client.res.ResLoader;
 import org.worldOfCube.client.util.Config;
 
 /**
@@ -25,12 +27,13 @@ import org.worldOfCube.client.util.Config;
  * Single-player version of it. It needs all the OpenGL-Rendering features
  * whereas the (TODO: to-be-implemented) MultiWorld version does not use
  * OpenGL features at all, and is only used for the Server-side.</p>
- * 
+ *
  * @author matheusdev
  *
  */
 public class SingleWorld extends World {
 
+	protected MouseCursor cursor;
 	protected Entity watching;
 	protected EntityPlayer player;
 
@@ -62,14 +65,20 @@ public class SingleWorld extends World {
 		// Setup stuff with the given Player Entity, so it is set as player and
 		// will be followed by the viewport when moving around the world.
 		// See the Javadoc of these methods for more information.
+		// But first position the player to the spawn position:
+		setToSpawnPosition(ep);
 		addEntity(ep);
 		setPlayer(ep);
 		setWatchingEntity(ep);
 		light = new LightUpdater(cManager);
+		cursor = new MouseCursor(ep.getName());
 
 		// Calculate width and height of the viewport:
 		viewport.w = display.getWidth();
 		viewport.h = display.getHeight();
+
+		// TODO: (Mouselight) Remove it, when lightblocks are implemented ;)
+		addEntity(new EntityMouselight(0, 0, 1, 1));
 	}
 
 	public void tick(double delta, UniDisplay display) {
@@ -111,7 +120,7 @@ public class SingleWorld extends World {
 							viewport.y-deltay));
 		}
 		// Yeah... Let's add a little bit fun here:
-		if (!bounds.contains(viewport)) {
+		if (viewport.area() > bounds.area()) {
 			throw new RuntimeException("\"!bounds.contains(viewport)\"\n" +
 					"Wow! You seen to either have a VERY huge display,\n" +
 					"or the world which was created is truly little :)");
@@ -140,7 +149,6 @@ public class SingleWorld extends World {
 			glColor3f(1f, 1f, 1f);
 
 			boolean vaorend = Config.get("block_rendering").equals("vao");
-			vaorend = false; // TODO: Remove!
 			if (vaorend) {
 				glEnableClientState(GL_VERTEX_ARRAY);
 				glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -169,6 +177,11 @@ public class SingleWorld extends World {
 
 		if (Config.get("debug").equals("on")) {
 			GLFont.render(10f, 30f, GLFont.ALIGN_LEFT, entitys.size() + " entitys.", 10);
+			GLFont.render(10f, 40f, GLFont.ALIGN_LEFT,
+					String.format(
+							"Player position: (%G, %G)",
+							player.getRect().x, player.getRect().y),
+					10);
 		}
 	}
 
@@ -225,6 +238,29 @@ public class SingleWorld extends World {
 	 */
 	public Entity getWatchingEntity() {
 		return watching;
+	}
+
+	@Override
+	public void handleKeyEvent(int keyCode, char keyChar, boolean down) {
+		super.handleKeyEvent(keyCode, keyChar, down);
+		cursor.handleKeyEvent(keyCode, keyChar, down, this);
+	}
+
+	@Override
+	public void handleMouseEvent(int mousex, int mousey, int button, boolean down) {
+		super.handleMouseEvent(mousex, mousey, button, down);
+		cursor.handleMouseEvent(mousex, mousey, button, down, this);
+	}
+
+	@Override
+	public void handleMousePosition(int mousex, int mousey) {
+		super.handleMousePosition(mousex, mousey);
+		cursor.handleMousePosition(mousex, mousey, this);
+	}
+
+	private void setToSpawnPosition(EntityPlayer ep) {
+		ep.getRect().x = totalPix / 2 + ((rand.nextInt() % (64 * ResLoader.BLOCK_SIZE))- (32 * ResLoader.BLOCK_SIZE));;
+		ep.move(0, totalPix/2, this);
 	}
 
 	public float getClearColorRed() { return ClientMain.BG_R * light.getSunlight().getStrength(); }

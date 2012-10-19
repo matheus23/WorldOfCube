@@ -1,10 +1,10 @@
 package org.worldOfCube.client.logic.chunks;
 
-import org.lwjgl.input.Mouse;
 import org.worldOfCube.Log;
 import org.worldOfCube.client.blocks.Block;
 import org.worldOfCube.client.blocks.BlockID;
 import org.worldOfCube.client.input.InputManager;
+import org.worldOfCube.client.input.WorldInputListener;
 import org.worldOfCube.client.logic.collision.Rectangle;
 import org.worldOfCube.client.logic.entity.EntityDrop;
 import org.worldOfCube.client.logic.entity.EntityPlayer;
@@ -13,24 +13,27 @@ import org.worldOfCube.client.logic.inventory.ItemStack;
 import org.worldOfCube.client.res.ResLoader;
 import org.worldOfCube.client.util.Distance;
 
-public class MouseCursor {
-	
+public class MouseCursor implements WorldInputListener {
+
 	/** Only calculate mouse actions every second frame */
 	public static final int DELAY = 2;
 	/** The distance to be able to place blocks */
 	public static final int BLOCK_PLACE_DIST = 5;
-	
+
 	public static final int BLOCK_REMOVE = 1;
 	public static final int BLOCK_ADD = 2;
-	
-	private boolean inforeground = true;
-	private boolean pressedF;
-	private ItemStack stack; // TODO: Implement this "stack"-feature.
-	private int count = 0;
 
-	public MouseCursor() {
+	protected final String playerName;
+
+	protected boolean inforeground = true;
+	protected boolean pressedF;
+	protected ItemStack stack; // TODO: Implement this "stack"-feature.
+	protected int count = 0;
+
+	public MouseCursor(String playerName) {
+		this.playerName = playerName;
 	}
-	
+
 	/**
 	 * Updates the MouseCursor, calculating whether to place
 	 * blocks or not. If true, it calls {@link #blockAction(int, int, int, EntityPlayer)},
@@ -40,42 +43,14 @@ public class MouseCursor {
 	 * @param world the world instance to operate on.
 	 */
 	public void tick(Rectangle viewport, SingleWorld world) {
-		if (InputManager.down("change") && !pressedF) {
-			pressedF = true;
-			inforeground = !inforeground;
-			Log.out(this, "Editing in " + (inforeground ? "foreground" : "background"));
-		}
-		if (!InputManager.down("change") && pressedF) {
-			pressedF = false;
-		}
-		if (count == 0) {
-			//TODO: Really need to re-implement this with WorldInputListener and handleMouseEvent()!
-//			int x = ((int) world.getGameMouseX()) / ResLoader.BLOCK_SIZE;
-//			int y = ((int) world.getGameMouseY()) / ResLoader.BLOCK_SIZE;
-//			EntityPlayer ep = world.getPlayer();
-//			int bx = (int) (ep.midx()/ResLoader.BLOCK_SIZE);
-//			int by = (int) (ep.midy()/ResLoader.BLOCK_SIZE);
-//			int dist = Distance.get(x, y, bx, by);
-//			
-//			if (dist < BLOCK_PLACE_DIST) {
-//				if (Mouse.isButtonDown(0)) {
-//					blockAction(BLOCK_REMOVE, x, y, ep, world);
-//					count = DELAY;
-//				}
-//				if (Mouse.isButtonDown(1)) {
-//					blockAction(BLOCK_ADD, x, y, ep, world);
-//					count = DELAY;
-//				}
-//			}
-		}
 		if (count > 0) {
 			count--;
 		}
 	}
-	
+
 	public void render() {
 	}
-	
+
 	/**
 	 * Cause an action on a world-space block x and y position.
 	 * "action" has to be either {@link #BLOCK_ADD} or {@link #BLOCK_REMOVE}.
@@ -85,7 +60,7 @@ public class MouseCursor {
 	 * @param y the world-space block y position.
 	 * @param ep the player to get the item from, etc.
 	 */
-	public void blockAction(int action, int x, int y, EntityPlayer ep, SingleWorld world) {
+	public void blockAction(int action, int x, int y, EntityPlayer ep, World world) {
 		Chunk c = world.getChunkManager().getChunkFromBlockCoords(x, y);
 		byte bx = (byte)(x % world.getChunkManager().getChunkSize());
 		byte by = (byte)(y % world.getChunkManager().getChunkSize());
@@ -106,12 +81,12 @@ public class MouseCursor {
 			}
 			break;
 		case BLOCK_REMOVE:
-			Block b = c.getLocalBlock(bx, by, inforeground); 
+			Block b = c.getLocalBlock(bx, by, inforeground);
 			if (b != null) {
 				c.setLocalBlock(bx, by, null, inforeground);
 				world.addEntity(new EntityDrop(
 						new Item(BlockID.blockToItem(b)),
-						x*ResLoader.BLOCK_SIZE, 
+						x*ResLoader.BLOCK_SIZE,
 						y*ResLoader.BLOCK_SIZE));
 				c.updateDiamond(bx, by);
 			}
@@ -119,5 +94,49 @@ public class MouseCursor {
 		default: throw new IllegalArgumentException("Wrong argument \"action\": " + action);
 		}
 	}
-	
+
+	/* (non-Javadoc)
+	 * @see org.worldOfCube.client.input.WorldInputListener#handleKeyEvent(int, char, boolean, org.worldOfCube.client.logic.chunks.World)
+	 */
+	@Override
+	public void handleKeyEvent(int keyCode, char keyChar, boolean down, World world) {
+		if (down && InputManager.isOneOfKeys("change", keyCode)) {
+			inforeground = !inforeground;
+			Log.out("Editing in " + (inforeground ? "foreground" : "background"));
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.worldOfCube.client.input.WorldInputListener#handleMouseEvent(int, int, int, boolean, org.worldOfCube.client.logic.chunks.World)
+	 */
+	@Override
+	public void handleMouseEvent(int mousex, int mousey, int button, boolean down, World world) {
+		int x = ((int) world.convertXToWorld(mousex)) / ResLoader.BLOCK_SIZE;
+		int y = ((int) world.convertYToWorld(mousey)) / ResLoader.BLOCK_SIZE;
+		EntityPlayer ep = world.getPlayer(playerName);
+		int bx = (int) (ep.midx()/ResLoader.BLOCK_SIZE);
+		int by = (int) (ep.midy()/ResLoader.BLOCK_SIZE);
+		int dist = Distance.get(x, y, bx, by);
+
+		if (down && dist < BLOCK_PLACE_DIST) {
+			switch (button) {
+			case 0:
+				blockAction(BLOCK_REMOVE, x, y, ep, world);
+				count = DELAY;
+				break;
+			case 1:
+				blockAction(BLOCK_ADD, x, y, ep, world);
+				count = DELAY;
+				break;
+			}
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.worldOfCube.client.input.WorldInputListener#handleMousePosition(int, int, org.worldOfCube.client.logic.chunks.World)
+	 */
+	@Override
+	public void handleMousePosition(int mousex, int mousey, World world) {
+	}
+
 }

@@ -1,6 +1,7 @@
 package org.worldOfCube.client.logic.entity;
 
 import org.lwjgl.input.Keyboard;
+import org.worldOfCube.Log;
 import org.worldOfCube.client.input.InputManager;
 import org.worldOfCube.client.logic.animation.Bone;
 import org.worldOfCube.client.logic.animation.Skeleton;
@@ -38,7 +39,6 @@ public class EntityPlayer extends Entity {
 
 	private float legFrontTime = 0f;
 	private float legBackTime = (float)Math.PI;
-	private boolean pressedG = false;
 	private boolean godmode = false;
 	private final String name;
 	private double lastMouseX;
@@ -56,13 +56,6 @@ public class EntityPlayer extends Entity {
 
 	@Override
 	public void tick(double delta, World world) {
-		if (Keyboard.isKeyDown(Keyboard.KEY_G) && !pressedG) {
-			pressedG = true;
-			godmode = !godmode;
-		}
-		if (!Keyboard.isKeyDown(Keyboard.KEY_G) && pressedG) {
-			pressedG = false;
-		}
 		if (godmode) {
 			dx = 0;
 			dy = 0;
@@ -99,8 +92,8 @@ public class EntityPlayer extends Entity {
 		if (onBottom && moving) {
 			legFront.setRotation((float)Math.sin(legFrontTime)*60f);
 			legBack.setRotation((float)Math.sin(legBackTime)*60f);
-			legFrontTime += 0.2f;
-			legBackTime += 0.2f;
+			legFrontTime += delta * 12.0;
+			legBackTime += delta * 12.0;
 		} else if (!onBottom) {
 			legFront.setRotation(60f);
 			legBack.setRotation(-60f);
@@ -129,6 +122,21 @@ public class EntityPlayer extends Entity {
 			dy = 0;
 			onBottom = true;
 		}
+		if (InputManager.down("up") && onBottom) {
+			dy = -JUMP_SPEED;
+			onBottom = false;
+		}
+		if (InputManager.down("right")) {
+			dx = speed;
+			dir = RIGHT;
+			moving = true;
+		} else if (InputManager.down("left")) {
+			dx = -speed;
+			dir = LEFT;
+			moving = true;
+		} else {
+			dx = 0f;
+		}
 	}
 
 	private void clipPosition(World world) {
@@ -148,27 +156,16 @@ public class EntityPlayer extends Entity {
 
 	@Override
 	public void handleKeyEvent(int keyCode, char keyChar, boolean down, World world) {
-		if (InputManager.isOneOfKeys("right", keyCode) && down) {
-			dx = speed;
-			dir = RIGHT;
-			moving = true;
-		} else if (InputManager.isOneOfKeys("left", keyCode) && down) {
-			dx = -speed;
-			dir = LEFT;
-			moving = true;
-		} else {
-			dx = 0f;
-		}
-		if (InputManager.isOneOfKeys("up", keyCode) && down && onBottom) {
-			dy = -JUMP_SPEED;
-			onBottom = false;
+		if (keyCode == Keyboard.KEY_G && down) {
+			godmode = !godmode;
+			Log.out("%s godmode", (godmode ? "Enabling" : "Disabling"));
 		}
 	}
 
 	@Override
 	public void handleMousePosition(int mousex, int mousey, World world) {
-		lastMouseX = world.convertXPosToWorldPos(mousex);
-		lastMouseY = world.convertYPosToWorldPos(mousey);
+		lastMouseX = world.convertXToWorld(mousex);
+		lastMouseY = world.convertYToWorld(mousey);
 	}
 
 	@Override

@@ -10,18 +10,18 @@ import org.worldOfCube.client.util.Timer;
 public class ChunkManager {
 
 	public final int pixelPerChunk;
-	
+
 	protected final int size;
 	protected final int csize;
-	
+
 	protected Chunk[][] chunks;
-	
+
 	private long loaded;
 	private long toLoad = 1;
-	
+
 	/**
 	 * Constructor. This will not create any instance of Chunks.
-	 * This will only Initialize the size of the Arrays and 
+	 * This will only Initialize the size of the Arrays and
 	 * some of the variables.
 	 * It is only possible to create square-Worlds.
 	 * @param size the number of Chunks on both x and y axis.
@@ -34,15 +34,15 @@ public class ChunkManager {
 		chunks = new Chunk[size][size];
 		toLoad = size*size;
 	}
-	
+
 	public int getSize() {
 		return size;
 	}
-	
+
 	public int getChunkSize() {
 		return csize;
 	}
-	
+
 	/**
 	 * Creates a World with a given Generator, calling
 	 * Chunk's {@link Chunk#createBlocks(Generator)}.
@@ -53,13 +53,13 @@ public class ChunkManager {
 	 */
 	public void create(Generator g) {
 		initChunks();
-		Log.out(this, "Creating chunks with world size " + size + " and chunk size " + csize);
+		Log.out("Creating chunks with world size " + size + " and chunk size " + csize);
 		Timer t = new Timer().start();
 		createChunks(g);
 		initAll();
-		Log.out(this, "Creation took " + t.stop() + " milliseconds");
+		Log.out("Creation took " + t.stop() + " milliseconds");
 	}
-	
+
 	/**
 	 * Calls the Constructor for every possible position in the World.
 	 * It also increases the "loaded" counter.
@@ -73,7 +73,7 @@ public class ChunkManager {
 			}
 		}
 	}
-	
+
 	/**
 	 * calls {@link Chunk#create(Generator)} on each Chunk in the
 	 * Array. It also increases the "loaded" counter.
@@ -88,7 +88,7 @@ public class ChunkManager {
 			}
 		}
 	}
-	
+
 	/**
 	 * Renders all chunks, which "collide" with the given viewport.
 	 * @param wx viewport x position.
@@ -111,7 +111,7 @@ public class ChunkManager {
 			}
 		}
 	}
-	
+
 	/**
 	 * Calls {@link Chunk#updateAll()} on all Chunks.
 	 */
@@ -122,7 +122,7 @@ public class ChunkManager {
 			}
 		}
 	}
-	
+
 	/**
 	 * Calls {@link Chunk#initAll()} on all Chunks.
 	 */
@@ -133,7 +133,7 @@ public class ChunkManager {
 			}
 		}
 	}
-	
+
 	/**
 	 * Returns a Block from world-space coordinates.
 	 * @param totalx world-space x position.
@@ -153,7 +153,7 @@ public class ChunkManager {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Sets a Block in a world-space position.
 	 * @param totalx world-space x position.
@@ -199,7 +199,7 @@ public class ChunkManager {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Does the same as {@link Chunk#removeBlock(int, int, boolean)},
 	 * but in world-space.
@@ -245,11 +245,11 @@ public class ChunkManager {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * @param totalx world-space x position.
 	 * @param totaly world-space y position.
-	 * @param frontbuffer whether to get the light value from the front- or back-buffer. 
+	 * @param frontbuffer whether to get the light value from the front- or back-buffer.
 	 * @return the lightness at world-space (totalx, totaly).
 	 */
 	public float getLightness(int totalx, int totaly, boolean frontbuffer) {
@@ -264,7 +264,7 @@ public class ChunkManager {
 		}
 		return 0;
 	}
-	
+
 	/**
 	 * @param totalx the world-block-space x position.
 	 * @param totaly the world-block-space y position.
@@ -279,7 +279,7 @@ public class ChunkManager {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Resets the Light on all Chunks, calling {@link Chunk#resetLight(boolean)}.
 	 * @param frontbuffer whether to reset in front- or back-buffer.
@@ -293,7 +293,7 @@ public class ChunkManager {
 			}
 		}
 	}
-	
+
 	/**
 	 * throws an ArrayIndexOutOfBoundsException, if the position is not valid.
 	 * @param x world-space Chunk x position.
@@ -303,14 +303,14 @@ public class ChunkManager {
 	public Chunk getChunk(int x, int y) {
 		return chunks[x][y];
 	}
-	
+
 	/**
 	 * @return the Load process in %, used by the loading bar, and {@link SingleplayerWorldTHEFUCK#getLoaded()}.
 	 */
 	public float getLoadProgress() {
 		return ((float)loaded/(float)toLoad)*100f;
 	}
-	
+
 	/**
 	 * @param x the world-space Chunk x position.
 	 * @param y the world-space Chunk y position.

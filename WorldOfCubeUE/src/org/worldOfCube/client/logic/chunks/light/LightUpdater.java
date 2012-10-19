@@ -9,19 +9,20 @@ import org.worldOfCube.client.res.ResLoader;
 import org.worldOfCube.client.util.debug.PerfMonitor;
 
 public class LightUpdater {
-	
+
 	private class UpdaterThread extends Thread {
 		volatile int beginx;
 		volatile int beginy;
 		volatile int endx;
 		volatile int endy;
-		
+
 		UpdaterThread() {
 			setDaemon(true);
 			setName("LightUpdater Thread");
 			start();
 		}
-		
+
+		@Override
 		public void run() {
 			while (true) {
 				PerfMonitor.startProfile("LIGHT UPDATE");
@@ -50,7 +51,7 @@ public class LightUpdater {
 						for (int i = 0; i < c.getLightNum(); i++) {
 							updateLightSource(
 									(int)(c.getLight(i).lightX()/ResLoader.BLOCK_SIZE),
-									(int)(c.getLight(i).lightY()/ResLoader.BLOCK_SIZE), 
+									(int)(c.getLight(i).lightY()/ResLoader.BLOCK_SIZE),
 									c.getLight(i).getLight());
 							if (Thread.currentThread().isInterrupted()) {
 								return;
@@ -66,13 +67,13 @@ public class LightUpdater {
 				PerfMonitor.stopProfile("LIGHT UPDATE");
 				try {
 					Thread.sleep(0);
-				} catch (InterruptedException e) { 
-					Log.out(this, "LightUpdater-Thread got interrupted. Exiting normally."); 
-					return; 
+				} catch (InterruptedException e) {
+					Log.out("LightUpdater-Thread got interrupted. Exiting normally.");
+					return;
 				}
 			}
 		}
-		
+
 		void update(int bx, int by, int ex, int ey) {
 			beginx = bx;
 			beginy = by;
@@ -80,11 +81,11 @@ public class LightUpdater {
 			endy = ey;
 		}
 	}
-	
+
 	private RenderedLight sunlight = new RenderedLight(8, 1f);
 	private ChunkManager cManager;
 	private UpdaterThread updater;
-	
+
 	/**
 	 * Constructor.
 	 * 
@@ -94,14 +95,14 @@ public class LightUpdater {
 		cManager = cm;
 		updater = new UpdaterThread();
 	}
-	
+
 	/**
 	 * @param brightness the brightness to set the sunlight to.
 	 */
 	public void setSunlight(float brightness) {
 		sunlight = new RenderedLight(8, Math.max(0f, brightness));
 	}
-	
+
 	/**
 	 * @return the current {@link org.worldOfCube.client.logic.chunks.light.RenderedLight}, used
 	 * as sunlight.
@@ -109,7 +110,7 @@ public class LightUpdater {
 	public RenderedLight getSunlight() {
 		return sunlight;
 	}
-	
+
 	/**
 	 * Force recalculating the light on the whole World.
 	 * (Takes a lot of time, should not be called often.)
@@ -119,7 +120,7 @@ public class LightUpdater {
 		floodFillLight(sunlight);
 		updateAllSources();
 	}
-	
+
 	/**
 	 * WARNING!: If you do not call this method, the "World" instance,
 	 * this Class's Thread holds, will never be garbage-collected, resulting
@@ -128,16 +129,16 @@ public class LightUpdater {
 	public void destroy() {
 		updater.interrupt();
 	}
-	
+
 	public void tick(Rectangle viewport) {
 		// TODO: Add Day/Night-cycle!
 		update(viewport);
 	}
-	
+
 	/**
 	 * Updates the information about where to update the light on the
-	 * Lighting updater Thread. 
-	 * The whole Lighting system is double-buffered, to make Threaded 
+	 * Lighting updater Thread.
+	 * The whole Lighting system is double-buffered, to make Threaded
 	 * Lighting look good. See the class Chunk for more information.
 	 * 
 	 * @param wx current pixel-space view x coordinate.
@@ -157,7 +158,7 @@ public class LightUpdater {
 		endy = Math.min(cManager.getSize()-1, endy);
 		updater.update(beginx, beginy, endx, endy);
 	}
-	
+
 	/**
 	 * Calls updateLightSource on all lights in all Chunks.
 	 * This Method should not be used frequently, because
@@ -176,9 +177,9 @@ public class LightUpdater {
 			}
 		}
 	}
-	
+
 	/**
-	 * Updates a light source. 
+	 * Updates a light source.
 	 * 
 	 * @param lx pixel-space light x position.
 	 * @param ly pixel-space light y position.
@@ -189,7 +190,7 @@ public class LightUpdater {
 	}
 
 	/**
-	 * This is an Algorithm to calculate a Light, which 
+	 * This is an Algorithm to calculate a Light, which
 	 * takes Walls into account. Blocks will stop light
 	 * by a specific amount (specified by Block.getLightWallness()).
 	 * 
@@ -198,10 +199,10 @@ public class LightUpdater {
 	 * @param midx the middle world-space x position from the light source.
 	 * @param midy the middle world-space y position from the light source.
 	 * @param walls how much/strong this iteration has gone through walls.
-	 * @param lastLight the last calculated brightness of the caller. 
+	 * @param lastLight the last calculated brightness of the caller.
 	 * @param light a pre-rendered Light to read values from.
 	 */
-	private void recursiveLight(int x, int y, int midx, int midy, 
+	private void recursiveLight(int x, int y, int midx, int midy,
 			float walls, float lastLight, RenderedLight light) {
 		if (!cManager.isValidPosition(x, y)) return;
 		if (x != midx || y != midy) {
@@ -210,9 +211,9 @@ public class LightUpdater {
 			if (fg != null) walls += fg.getLightWallness();
 			if (bg != null) walls += bg.getLightWallness();
 		}
-		
+
 		float newLight = light.getMidRelative(midx-x, midy-y)-(walls*0.01f);
-		
+
 		if (cManager.getLightness(x, y, false) < newLight) {
 			cManager.setLightness(x, y, newLight, false);
 			recursiveLight(x-1, y, midx, midy, walls, newLight, light);
@@ -221,14 +222,14 @@ public class LightUpdater {
 			recursiveLight(x, y+1, midx, midy, walls, newLight, light);
 		}
 	}
-	
+
 	/**
 	 * This Method will "flood-fill" the Light on the whole World.
 	 * Do not call this method often. This Method takes the most
 	 * time to calculate.
 	 * To calculate the light, this calls "floodFillLight(Chunk, RenderedLight)",
 	 * with the given argument "light" and every Chunk form the ChunkManager.
-	 *  
+	 * 
 	 * @param light the pre-rendered light to use as surface-light.
 	 */
 	private void floodFillLight(RenderedLight light) {
@@ -238,7 +239,7 @@ public class LightUpdater {
 			}
 		}
 	}
-	
+
 	/**
 	 * This Method "flood-fills" the light on the given Chunk.
 	 * But it is actually not a flood-fill.
@@ -258,8 +259,8 @@ public class LightUpdater {
 					if (hasSurrounding(c, x, y, false)
 							|| hasSurrounding(c, x, y, true)) {
 						updateLightSource(
-								c.getX()*cManager.getChunkSize()+x, 
-								c.getY()*cManager.getChunkSize()+y, 
+								c.getX()*cManager.getChunkSize()+x,
+								c.getY()*cManager.getChunkSize()+y,
 								light);
 					}
 					c.setLight(x, y, light.getStrength(), false);
@@ -267,9 +268,9 @@ public class LightUpdater {
 			}
 		}
 	}
-	
+
 	private boolean hasSurrounding(Chunk c, int x, int y, boolean foreground) {
-		return c.getBlock(x-1, y, foreground) != null 
+		return c.getBlock(x-1, y, foreground) != null
 				|| c.getBlock(x+1, y, foreground) != null
 				|| c.getBlock(x, y-1, foreground) != null
 				|| c.getBlock(x, y+1, foreground) != null;

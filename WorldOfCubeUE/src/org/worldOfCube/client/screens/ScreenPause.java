@@ -130,7 +130,7 @@ public class ScreenPause extends Screen implements BoxLabelListener {
 		} else if (bl.equals(buttonOpt)) {
 			mep.setScreen(new ScreenOptions(display, mep, this));
 		} else if (bl.equals(buttonSave)) {
-			WorldSaveManager.saveWorldThread(world);
+			WorldSaveManager.saveSingleWorldThreaded(world);
 		}
 	}
 

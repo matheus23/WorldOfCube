@@ -118,7 +118,7 @@ public final class ResLoader {
 	//	public static UniTexture cursor;
 
 	public static void load() {
-		Log.out(ResLoader.class, "Using texture rect = " + StateManager.isUsingTexRect());
+		Log.out("Using texture rect = " + StateManager.isUsingTexRect());
 		UniTextureLoader.flipImages = false;
 		//TODO: Blocks: Add to sheets, give sprites.
 		sheets[BLOCK_EARTH     ] = new SpriteSheet(res + "blocks/blocksEarth.png",      NUM_BLOCK_TYPES, StateManager.isUsingTexRect());
@@ -157,10 +157,10 @@ public final class ResLoader {
 		InputStream stream = Thread.currentThread().getContextClassLoader().getResourceAsStream(loadpath);
 		try {
 			if (stream == null || stream.available() == 0) {
-				Log.err(ResLoader.class, "Could not open InputStream from " + loadpath);
+				Log.err("Could not open InputStream from " + loadpath);
 			}
 		} catch (IOException e) {
-			Log.err(ResLoader.class, "Could not open InputStream from " + loadpath);
+			Log.err("Could not open InputStream from " + loadpath);
 			e.printStackTrace();
 		}
 		DecodePack pack = UniTextureLoader.loadImageBufferPNG(stream);
@@ -257,10 +257,10 @@ public final class ResLoader {
 		InputStream stream = Thread.currentThread().getContextClassLoader().getResourceAsStream(loadpath);
 		try {
 			if (stream == null || stream.available() == 0) {
-				Log.err(ResLoader.class, "Could not open InputStream from " + loadpath);
+				Log.err("Could not open InputStream from " + loadpath);
 			}
 		} catch (IOException e) {
-			Log.err(ResLoader.class, "Could not open InputStream from " + loadpath);
+			Log.err("Could not open InputStream from " + loadpath);
 			e.printStackTrace();
 		}
 		DecodePack pack = UniTextureLoader.loadImageBufferPNG(stream);

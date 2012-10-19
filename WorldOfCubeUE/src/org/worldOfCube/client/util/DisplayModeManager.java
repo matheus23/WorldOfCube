@@ -56,7 +56,7 @@ public class DisplayModeManager {
 						if ((current.getBitsPerPixel() == Display.getDesktopDisplayMode()
 								.getBitsPerPixel())
 								&& (current.getFrequency() == Display.getDesktopDisplayMode()
-										.getFrequency())) {
+								.getFrequency())) {
 							targetDisplayMode = current;
 							break;
 						}
@@ -67,7 +67,7 @@ public class DisplayModeManager {
 			}
 
 			if (targetDisplayMode == null) {
-				Log.err(this, "Failed to find value mode: " + width + "x" + height + " fs="
+				Log.err("Failed to find value mode: " + width + "x" + height + " fs="
 						+ fullscreen);
 				return;
 			}
@@ -76,11 +76,11 @@ public class DisplayModeManager {
 			Display.setFullscreen(fullscreen);
 
 		} catch (LWJGLException e) {
-			Log.err(this, "Unable to setup mode " + width + "x" + height + " fullscreen="
+			Log.err("Unable to setup mode " + width + "x" + height + " fullscreen="
 					+ fullscreen + e);
 		}
 	}
-	
+
 	public static void main(String[] args) {
 		DisplayMode[] modes = null;
 		try {

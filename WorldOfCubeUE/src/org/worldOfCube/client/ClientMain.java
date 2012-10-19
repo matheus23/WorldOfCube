@@ -34,11 +34,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.Thread.UncaughtExceptionHandler;
+import java.util.Map;
 
 import javax.swing.JOptionPane;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.LWJGLException;
+import org.lwjgl.Sys;
 import org.lwjgl.input.Cursor;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -52,12 +54,10 @@ import org.universeengine.util.input.UniInput;
 import org.universeengine.util.input.UniInputListener;
 import org.worldOfCube.Log;
 import org.worldOfCube.client.input.WrappedMouse;
-import org.worldOfCube.client.logic.chunks.SingleWorld;
-import org.worldOfCube.client.logic.entity.EntityPlayer;
 import org.worldOfCube.client.res.GLFont;
 import org.worldOfCube.client.res.ResLoader;
 import org.worldOfCube.client.screens.Screen;
-import org.worldOfCube.client.screens.ScreenGame;
+import org.worldOfCube.client.screens.ScreenMenu;
 import org.worldOfCube.client.util.Config;
 import org.worldOfCube.client.util.DisplayModeManager;
 import org.worldOfCube.client.util.StateManager;
@@ -91,7 +91,7 @@ public class ClientMain implements UniverseEngineEntryPoint, UniInputListener {
 	public void keyPressed(int key) {
 		if (key == Keyboard.KEY_F2) {
 			long time = TimeUtil.ms();
-			Log.out(this, "Starting to create screenshot.");
+			Log.out("Starting to create screenshot.");
 			File screendirectory = new File(screendir);
 			if (!screendirectory.exists()) {
 				screendirectory.mkdir();
@@ -112,9 +112,9 @@ public class ClientMain implements UniverseEngineEntryPoint, UniInputListener {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			Log.out(this, "Saving screenshot in " + screenpath);
+			Log.out("Saving screenshot in " + screenpath);
 			loop.saveScreenshot(screenpath);
-			Log.out(this, "Screenshot saving in progress... (" + (TimeUtil.ms()-time) + " ms)");
+			Log.out("Screenshot saving in progress... (" + (TimeUtil.ms()-time) + " ms)");
 		}
 		if (key == Keyboard.KEY_F11) {
 			fullscreen = !fullscreen;
@@ -125,7 +125,7 @@ public class ClientMain implements UniverseEngineEntryPoint, UniInputListener {
 	@Override
 	public void keyReleased(int key) {
 		if (key == Keyboard.KEY_H) {
-			Log.out(this, "Memory used: " + memoryInMB() + "." + (memoryInKB()%1000) +
+			Log.out("Memory used: " + memoryInMB() + "." + (memoryInKB()%1000) +
 					" MB (in bytes: " + memoryInBytes() + ")");
 		}
 	}
@@ -153,8 +153,8 @@ public class ClientMain implements UniverseEngineEntryPoint, UniInputListener {
 		} else {
 			StateManager.useTexRect(true);
 		}
-		Log.out(this, "GL_TEXTURE_2D enabled: " + glIsEnabled(GL_TEXTURE_2D));
-		Log.out(this, "GL_TEXTURE_RECTANGLE_ARB enabled: " + glIsEnabled(GL_TEXTURE_RECTANGLE_ARB));
+		Log.out("GL_TEXTURE_2D enabled: " + glIsEnabled(GL_TEXTURE_2D));
+		Log.out("GL_TEXTURE_RECTANGLE_ARB enabled: " + glIsEnabled(GL_TEXTURE_RECTANGLE_ARB));
 		// Load all resources.
 		ResLoader.load();
 		GLFont.load();
@@ -175,8 +175,7 @@ public class ClientMain implements UniverseEngineEntryPoint, UniInputListener {
 		WrappedMouse.giveDisplay(display);
 
 		in = new UniInput(this);
-		//screen = new ScreenMenu(display, this); TODO: Change back!
-		screen = new ScreenGame(display, this, new SingleWorld(new EntityPlayer(0, 0, "Player"), 32, 64, "SingleWorld", display));
+		screen = new ScreenMenu(display, this);
 		setupViewport(display.getWidth(), display.getHeight());
 		glClearColor(BG_R, BG_G, BG_B, 0f);
 		glClearDepth(1f);
@@ -210,24 +209,6 @@ public class ClientMain implements UniverseEngineEntryPoint, UniInputListener {
 	public void render() {
 		PerfMonitor.startProfile("RENDER");
 		screen.render();
-
-		//		boolean save = StateManager.isUsingTexRect();
-		//		StateManager.useTexRect(false);
-		//		StateManager.bindTexture(ResLoader.cursor);
-		//		StateManager.useTexRect(save);
-		//
-		//		glBegin(GL_QUADS);
-		//		{
-		//			glVertex2f(WrappedMouse.getX(), WrappedMouse.getY());
-		//			glTexCoord2f(0f, 0f);
-		//			glVertex2f(WrappedMouse.getX()+ResLoader.cursor.getWidth(), WrappedMouse.getY());
-		//			glTexCoord2f(1f, 0f);
-		//			glVertex2f(WrappedMouse.getX()+ResLoader.cursor.getWidth(), WrappedMouse.getY()+ResLoader.cursor.getHeight());
-		//			glTexCoord2f(1f, 1f);
-		//			glVertex2f(WrappedMouse.getX(), WrappedMouse.getY()+ResLoader.cursor.getHeight());
-		//			glTexCoord2f(0f, 1f);
-		//		}
-		//		glEnd();
 	}
 
 	@Override
@@ -286,7 +267,28 @@ public class ClientMain implements UniverseEngineEntryPoint, UniInputListener {
 	}
 
 	public static void main(String[] args) {
-		System.out.println("Fine.");
+		// Before this gets executed, outer librarys and classes are loaded.
+		// So in case anything fails while loading libs or classes, this won't be executed.
+		System.out.println("Fine."); // To tell the Updater, that everything started as it should.
+		Log.out("LWJGL Version: " + Sys.getVersion());
+		boolean verbose = false;
+		for (int i = 0; i < args.length; i++) {
+			if (args[i].equals("--verbose") ||
+					args[i].equals("-v") ||
+					args[i].equals("--debug") ||
+					args[i].equals("-d")) {
+				verbose = true;
+			}
+		}
+		if (verbose) {
+			StringBuilder sb = new StringBuilder("System Properties:\n");
+
+			for (Map.Entry<Object, Object> e : System.getProperties().entrySet()) {
+				sb.append(e.getKey() + " : " + e.getValue() + "\n");
+			}
+
+			Log.out(sb.toString());
+		}
 		Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
 			@Override
 			public void uncaughtException(Thread thread, Throwable e) {
