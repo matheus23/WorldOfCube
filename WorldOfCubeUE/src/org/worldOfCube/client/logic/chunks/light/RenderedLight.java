@@ -1,3 +1,24 @@
+/*
+ * Copyright (c) 2012 matheusdev
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to
+ * deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package org.worldOfCube.client.logic.chunks.light;
 
 import org.worldOfCube.client.util.Distance;
@@ -9,12 +30,12 @@ import org.worldOfCube.client.util.Distance;
  *
  */
 public class RenderedLight {
-	
+
 	private float[][] vals;
 	private int size;
 	private int radius;
 	private float strength;
-	
+
 	/**
 	 * Constructor.
 	 * Creates a new Light with a radius and a strength.
@@ -28,7 +49,7 @@ public class RenderedLight {
 		vals = new float[radius*2][radius*2];
 		gen(radius);
 	}
-	
+
 	/**
 	 * Calculates the values for each position in the float[][] matrix, "vals".
 	 * It interpolates "strength" with 0 to radius, with the distance between the middle
@@ -38,11 +59,11 @@ public class RenderedLight {
 	public void gen(int radius) {
 		for (int x = 0; x < size; x++) {
 			for (int y = 0; y < size; y++) {
-				vals[x][y] = (1f-Math.min(1f, (Distance.get((float)radius, (float)radius, (float)x, (float)y) / (float)(radius))))*strength;
+				vals[x][y] = (1f-Math.min(1f, (Distance.get((float)radius, (float)radius, (float)x, (float)y) / (radius))))*strength;
 			}
 		}
 	}
-	
+
 	/**
 	 * @param lx the relative light x position to get the light value for.
 	 * @param ly the relative light y position to get the light value for.
@@ -59,16 +80,16 @@ public class RenderedLight {
 		}
 		return 0f;
 	}
-	
+
 	/**
 	 * @param x the light x position.
 	 * @param y the light y position.
 	 * @return whether this position is inside the calculated values, or not.
 	 */
 	public boolean isValid(int x, int y) {
-		return (x >= 0 && y >= 0 && x < size && y < size); 
+		return (x >= 0 && y >= 0 && x < size && y < size);
 	}
-	
+
 	/**
 	 * This Method can cause a ArrayIndexOutOfBoundsException,
 	 * if (x, y) are out of range. You can check the range
@@ -80,7 +101,7 @@ public class RenderedLight {
 	public float get(int x, int y) {
 		return vals[x][y];
 	}
-	
+
 	/**
 	 * @return the size of this RenderedLight,
 	 * which is always the radius * 2.
@@ -88,21 +109,21 @@ public class RenderedLight {
 	public int getSize() {
 		return size;
 	}
-	
+
 	/**
 	 * @return the strength of this light.
 	 */
 	public float getStrength() {
 		return strength;
 	}
-	
+
 	/**
 	 * @return the radius of this light.
 	 */
 	public int getRadius() {
 		return radius;
 	}
-	
+
 	/**
 	 * This method calculates the Position in the array
 	 * to get the light value from, with an absolute light
@@ -122,5 +143,5 @@ public class RenderedLight {
 			return 0f;
 		}
 	}
-	
+
 }

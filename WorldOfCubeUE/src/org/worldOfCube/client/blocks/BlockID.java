@@ -1,3 +1,24 @@
+/*
+ * Copyright (c) 2012 matheusdev
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to
+ * deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package org.worldOfCube.client.blocks;
 
 import org.worldOfCube.client.logic.inventory.Item;
@@ -5,11 +26,11 @@ import org.worldOfCube.client.res.ResLoader;
 import org.worldOfCube.client.res.Sprite;
 
 public final class BlockID {
-	
+
 	private BlockID() {
 		// TODO: Blocks: Add to ID parser.
 	}
-	
+
 	/**
 	 * Transforms a BlockID to a Block instance, which did not
 	 * get added to a Chunk at this point.
@@ -32,7 +53,7 @@ public final class BlockID {
 		default: throw new IllegalArgumentException("Invalid Block ID: " + (int)id);
 		}
 	}
-	
+
 	/**
 	 * Turn an instance of Item to a block.
 	 * @param i the Item to get the Block from.
@@ -43,9 +64,9 @@ public final class BlockID {
 	public static Block itemToBlock(Item i, boolean foreground) {
 		return itemToBlock(i.getID(), foreground);
 	}
-	
+
 	/**
-	 * Creates a Block from a ItemID, without having added the 
+	 * Creates a Block from a ItemID, without having added the
 	 * Block to a specific Chunk.
 	 * Throws an IllegalArgumentException, when the ItemID is invalid.
 	 * @param id the ItemID to create the block from.
@@ -64,7 +85,7 @@ public final class BlockID {
 		default: throw new IllegalArgumentException("Invalid Item ID: " + id);
 		}
 	}
-	
+
 	/**
 	 * Used by the WorldSaveManager to save char representations
 	 * of Blocks into a file.
@@ -90,7 +111,7 @@ public final class BlockID {
 		}
 		return 0;
 	}
-	
+
 	/**
 	 * @param b the Block to get the itemID from.
 	 * @return the ItemID.
@@ -113,7 +134,7 @@ public final class BlockID {
 		}
 		return -1;
 	}
-	
+
 	/**
 	 * Used by the Inventory, to render Block sprites,
 	 * or to render Items in general.

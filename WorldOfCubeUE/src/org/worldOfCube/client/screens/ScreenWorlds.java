@@ -1,3 +1,30 @@
+/*
+ * Copyright (c) 2012 matheusdev
+ *
+ *import java.io.File;
+import java.io.IOException;
+
+import org.lwjgl.input.Keyboard;
+import org.universeengine.display.UniDisplay;
+import org.worldOfCube.Log;
+import org.worldOfCube.client.ClientMain;
+import org.worldOfCube.client.logic.chunks.SingleWorld;
+import org.worldOfCube.client.logic.chunks.WorldSaveManager;
+import org.worldOfCube.client.res.ResLoader;
+import org.worldOfCube.client.screens.gui.BoxLabel;
+import org.worldOfCube.client.screens.gui.BoxLabelListener;
+import org.worldOfCube.client.screens.gui.ScrollPanel;
+n
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package org.worldOfCube.client.screens;
 
 import java.io.File;

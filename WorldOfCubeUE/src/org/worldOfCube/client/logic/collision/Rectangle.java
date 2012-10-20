@@ -1,3 +1,24 @@
+/*
+ * Copyright (c) 2012 matheusdev
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to
+ * deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package org.worldOfCube.client.logic.collision;
 
 import static org.lwjgl.opengl.GL11.GL_LINE_LOOP;
@@ -16,7 +37,7 @@ public class Rectangle {
 	public Rectangle(double x, double y, double w, double h) {
 		set(x, y, w, h);
 	}
-	
+
 	/**
 	 * @param other the other Rectangle to copy this one from.
 	 */
@@ -51,7 +72,7 @@ public class Rectangle {
 	public boolean contains(Rectangle r) {
 		return (contains(r.x, r.y) && contains(r.x + r.w, r.y + r.h));
 	}
-	
+
 	public void glVertex(int id) {
 		switch (id) {
 		case 0: glVertex2f((float)x, (float)y); break;
@@ -61,11 +82,11 @@ public class Rectangle {
 		default: throw new IllegalArgumentException("Argument \"id\" has wrong value (not 0-3): " + id);
 		}
 	}
-	
+
 	public double area() {
 		return w*h;
 	}
-	
+
 	public void render(boolean asline) {
 		glBegin(asline ? GL_LINE_LOOP : GL_QUADS);
 		{
@@ -76,16 +97,17 @@ public class Rectangle {
 		}
 		glEnd();
 	}
-	
+
 	public void set(double x, double y, double w, double h) {
 		this.x = x;
 		this.y = y;
 		this.w = w;
 		this.h = h;
 	}
-	
+
+	@Override
 	public String toString() {
 		return String.format("[Rectangle: (%G, %G | %G, %G)", x, y, w, h);
 	}
-	
+
 }

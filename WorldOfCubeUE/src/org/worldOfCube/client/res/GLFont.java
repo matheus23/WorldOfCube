@@ -1,3 +1,24 @@
+/*
+ * Copyright (c) 2012 matheusdev
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to
+ * deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package org.worldOfCube.client.res;
 
 import java.util.HashMap;
@@ -5,14 +26,14 @@ import java.util.HashMap;
 import org.worldOfCube.client.util.StateManager;
 
 public class GLFont {
-	
+
 	public static final int ALIGN_LEFT = 0;
 	public static final int CENTER = 1;
-	
-	private static final int SIZE = 10; 
-	
+
+	private static final int SIZE = 10;
+
 	private static HashMap<Character, Sprite> chars = new HashMap<Character, Sprite>();
-	
+
 	public static void load() {
 		SpriteSheet img = new SpriteSheet(ResLoader.res + "fonts/font.png", 95, StateManager.isUsingTexRect());
 		int i = 0;
@@ -42,7 +63,7 @@ public class GLFont {
 		chars.put('x', img.giveSprite(i++,  80, 10, SIZE, SIZE));
 		chars.put('y', img.giveSprite(i++,  90, 10, SIZE, SIZE));
 		chars.put('z', img.giveSprite(i++, 100, 10, SIZE, SIZE));
-		
+
 		chars.put('A', img.giveSprite(i++,   0, 20, SIZE, SIZE));
 		chars.put('B', img.giveSprite(i++,  10, 20, SIZE, SIZE));
 		chars.put('C', img.giveSprite(i++,  20, 20, SIZE, SIZE));
@@ -69,7 +90,7 @@ public class GLFont {
 		chars.put('X', img.giveSprite(i++,  80, 30, SIZE, SIZE));
 		chars.put('Y', img.giveSprite(i++,  90, 30, SIZE, SIZE));
 		chars.put('Z', img.giveSprite(i++, 100, 30, SIZE, SIZE));
-		
+
 		chars.put('0', img.giveSprite(i++,   0, 40, SIZE, SIZE));
 		chars.put('1', img.giveSprite(i++,  10, 40, SIZE, SIZE));
 		chars.put('2', img.giveSprite(i++,  20, 40, SIZE, SIZE));
@@ -80,12 +101,12 @@ public class GLFont {
 		chars.put('7', img.giveSprite(i++,  70, 40, SIZE, SIZE));
 		chars.put('8', img.giveSprite(i++,  80, 40, SIZE, SIZE));
 		chars.put('9', img.giveSprite(i++,  90, 40, SIZE, SIZE));
-		
+
 		chars.put('ä', img.giveSprite(i++, 100, 40, SIZE, SIZE));
 		chars.put('ü', img.giveSprite(i++, 110, 40, SIZE, SIZE));
 		chars.put('ö', img.giveSprite(i++, 120, 40, SIZE, SIZE));
 		chars.put('ß', img.giveSprite(i++, 130, 40, SIZE, SIZE));
-		
+
 		chars.put('+', img.giveSprite(i++,   0, 50, SIZE, SIZE));
 		chars.put('-', img.giveSprite(i++,  10, 50, SIZE, SIZE));
 		chars.put('*', img.giveSprite(i++,  20, 50, SIZE, SIZE));
@@ -117,15 +138,15 @@ public class GLFont {
 		chars.put('$', img.giveSprite(i++, 120, 60, SIZE, SIZE));
 		chars.put('§', img.giveSprite(i++, 130, 60, SIZE, SIZE));
 	}
-	
+
 	public static boolean isValidChar(Character c) {
 		return chars.get(c) != null || c == ' ';
 	}
-	
+
 	public static Sprite get(Character c) {
 		return chars.get(c);
 	}
-	
+
 	public static void render(float x, float y, int type, CharSequence chs, float size, boolean append, char appendchar) {
 		Sprite sprite;
 		if (type == ALIGN_LEFT) {
