@@ -25,9 +25,9 @@ public abstract class Block {
 		new Rectangle(0, 0, ResLoader.BLOCK_SIZE, ResLoader.BLOCK_SIZE)
 	};
 	public static final float BACKGROUND_DARKNESS = 0.2f;
-	public static final float BG_DIVIDE = 1.2f;
-	public static float DRAW_SIZE = (float)ResLoader.BLOCK_SIZE; 
-	
+	public static final float BG_DIVIDE = 1.5f;
+	public static float DRAW_SIZE = ResLoader.BLOCK_SIZE;
+
 	protected byte x;
 	protected byte y;
 	protected byte borderID;
@@ -47,7 +47,7 @@ public abstract class Block {
 		this.c = c;
 		this.foreground = foreground;
 	}
-	
+
 	/**
 	 * Create a block with undefined position and chunk.
 	 * Used for creating blocks when adding blocks to the world
@@ -61,7 +61,7 @@ public abstract class Block {
 		c = null;
 		this.foreground = foreground;
 	}
-	
+
 	/**
 	 * Used when the block was created through the foreground-only
 	 * Constructor.
@@ -85,9 +85,9 @@ public abstract class Block {
 	public void update() {
 		borderID = calculateBorder();
 	}
-	
+
 	/**
-	 * @return an awt Color instance, which will be used 
+	 * @return an awt Color instance, which will be used
 	 * for displaying blocks in the server's WorldViewer
 	 * @see org.worldOfCube.server.gui.viewer.WorldViewer
 	 */
@@ -98,40 +98,40 @@ public abstract class Block {
 	 * @see org.worldOfCube.client.logic.chunks.Chunk#render(float, float, float, float)
 	 */
 	public abstract void render();
-	
+
 	/**
 	 * Called, when a block gets rendered by a chunk and
 	 * "foreground" is false.
 	 * @see org.worldOfCube.client.logic.chunks.Chunk#render(float, float, float, float)
 	 */
 	public abstract void renderBackground();
-	
+
 	/**
 	 * Called, after a block got created.
 	 */
 	public abstract void init();
-	
+
 	/**
-	 * Key for creating blocks which fit to a group of other block types. 
+	 * Key for creating blocks which fit to a group of other block types.
 	 * @param x world space x-position of the other block
 	 * @param y world space y-position of the other block
 	 * @return whether the block is a valid neighbor or not
 	 */
 	public abstract boolean isValidNeighbor(int x, int y);
-	
+
 	public boolean containsAlpha() {
 		return false;
 	}
-	
+
 	/**
-	 * @return the number of times this block reduces the light 
+	 * @return the number of times this block reduces the light
 	 * (Foregroundblock's standard: 5 * 0.01)
 	 * (Backgroundblock's standard: 0.2 * 0.01);
 	 */
 	public float getLightWallness() {
 		return foreground ? 8f : 0.2f;
 	}
-	
+
 	/**
 	 * Standard collision rect array is "collisions".
 	 * @return a number of Rectangles, which represent the collidable
@@ -144,14 +144,14 @@ public abstract class Block {
 		collisions[0].y = (c.getY() * c.getSize() + y) * ResLoader.BLOCK_SIZE;
 		return collisions;
 	}
-	
+
 	/**
 	 * A method to be overridden.
 	 * Gets called, when a block gets destroyed.
 	 */
 	public void destroy() {
 	}
-	
+
 	/**
 	 * @return the chunk the block is added to,
 	 * or null, if the block was not created yet.
@@ -159,7 +159,7 @@ public abstract class Block {
 	public Chunk getChunk() {
 		return c;
 	}
-	
+
 	/**
 	 * @return the borderID used from the ResLoader to get the
 	 * right sprite to be drawn.
@@ -177,15 +177,15 @@ public abstract class Block {
 		boolean newRendering = Config.get("block_rendering").equals("vao");
 		glPushMatrix();
 		glTranslatef(
-				x * ResLoader.BLOCK_SIZE, 
+				x * ResLoader.BLOCK_SIZE,
 				y * ResLoader.BLOCK_SIZE, 0f);
 		Var.col1 = c.getLight(x, y, true);
 		Var.col2 = c.getLight((byte)(x+1), y, true);
 		Var.col3 = c.getLight((byte)(x+1), (byte)(y+1), true);
 		Var.col4 = c.getLight(x, (byte)(y+1), true);
-		
+
 		renderSpriteIntern(sprite, newRendering);
-		
+
 		glPopMatrix();
 	}
 
@@ -196,20 +196,20 @@ public abstract class Block {
 	protected void renderBackgroundIntern(Sprite sprite) {
 		boolean newRendering = Config.get("block_rendering").equals("new");
 		glPushMatrix();
-		glTranslatef(x * ResLoader.BLOCK_SIZE, 
+		glTranslatef(x * ResLoader.BLOCK_SIZE,
 					y * ResLoader.BLOCK_SIZE, 0f);
 		Var.col1 = Math.min(1f, c.getLight(x, y, true)) / BG_DIVIDE;
 		Var.col2 = Math.min(1f, c.getLight((byte)(x+1), y, true)) / BG_DIVIDE;
 		Var.col3 = Math.min(1f, c.getLight((byte)(x+1), (byte)(y+1), true)) / BG_DIVIDE;
 		Var.col4 = Math.min(1f, c.getLight(x, (byte)(y+1), true)) / BG_DIVIDE;
-		
+
 		renderSpriteIntern(sprite, newRendering);
-		
+
 		glPopMatrix();
 	}
-	
+
 	/**
-	 * Internal method to render a sprite with a given "techneque". 
+	 * Internal method to render a sprite with a given "techneque".
 	 * @param sprite which sprite to use for rendering.
 	 * @param vao whether to render this block as vao, or not
 	 */
@@ -222,15 +222,15 @@ public abstract class Block {
 					glColor3f(Var.col1, Var.col1, Var.col1);
 					sprite.glTexCoord(0);
 					glVertex2f(0f, 0f);
-	
+
 					glColor3f(Var.col2, Var.col2, Var.col2);
 					sprite.glTexCoord(1);
 					glVertex2f(DRAW_SIZE, 0f);
-	
+
 					glColor3f(Var.col3, Var.col3, Var.col3);
 					sprite.glTexCoord(2);
 					glVertex2f(DRAW_SIZE, DRAW_SIZE);
-	
+
 					glColor3f(Var.col4, Var.col4, Var.col4);
 					sprite.glTexCoord(3);
 					glVertex2f(0f, DRAW_SIZE);
@@ -260,7 +260,7 @@ public abstract class Block {
 			}
 		}
 	}
-	
+
 	/**
 	 * Calls isValidNeighbor() for every neighbor in a diamond-shape,
 	 * to calculate the borderID, used to render the right sprite
@@ -334,5 +334,5 @@ public abstract class Block {
 			}
 		}
 	}
-	
+
 }
