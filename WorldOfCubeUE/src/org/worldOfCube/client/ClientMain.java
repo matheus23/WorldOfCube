@@ -270,6 +270,11 @@ public class ClientMain implements UniverseEngineEntryPoint, UniInputListener {
 		ResLoader.unload();
 	}
 
+	@Override
+	public boolean isCloseRequested() {
+		return false;
+	}
+
 	public void setupViewport(int width, int height) {
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -296,7 +301,7 @@ public class ClientMain implements UniverseEngineEntryPoint, UniInputListener {
 		for (int i = 0; i < args.length; i++) {
 			if (args[i].equals("--verbose") ||
 					args[i].equals("-v") ||
-					args[i].equals("--debuafgwg") ||
+					args[i].equals("--debug") ||
 					args[i].equals("-d")) {
 				verbose = true;
 			}
