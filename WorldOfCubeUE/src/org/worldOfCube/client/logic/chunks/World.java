@@ -131,13 +131,20 @@ public abstract class World implements InputListener {
 		for (int i = 0; i < drops.size(); i++) {
 			EntityDrop drop = drops.get(i);
 			EntityPlayer nearestPlayer = nearestPlayer(drop.midx(), drop.midy());
+			double dist = Dist.squared(drop.midx(), drop.midy(), nearestPlayer.midx(), nearestPlayer.midy());
 
-			if (Dist.root(drop.midx(), drop.midy(), nearestPlayer.midx(), nearestPlayer.midy()) < 64f) {
-				Vec delta = new Vec(drop.midx(), drop.midy(), nearestPlayer.midx(), nearestPlayer.midy());
-				delta.normalize();
-				delta.mul(6f);
+			if (dist < 64*64) {
+				if (dist < 8*8) {
+					if (nearestPlayer.collect(drop)) {
+						removeEntity(drop);
+					}
+				} else {
+					Vec delta = new Vec(drop.midx(), drop.midy(), nearestPlayer.midx(), nearestPlayer.midy());
+					delta.normalize();
+					delta.mul(6f);
 
-				drop.move(delta.x, delta.y, this);
+					drop.move(delta.x, delta.y, this);
+				}
 			}
 		}
 		PerfMonitor.stopProfile("ENTITY TICK");
@@ -239,7 +246,7 @@ public abstract class World implements InputListener {
 		double lastDist = Double.MAX_VALUE;
 		EntityPlayer nearest = null;
 		for (int i = 0; i < players.size(); i++) {
-			double dist = Dist.lin(x, y, players.get(i).midx(), players.get(i).midy());
+			double dist = Dist.squared(x, y, players.get(i).midx(), players.get(i).midy());
 			if (dist < lastDist) {
 				lastDist = dist;
 				nearest = players.get(i);
@@ -289,7 +296,7 @@ public abstract class World implements InputListener {
 	 * @param rect the rect to check the collision with.
 	 * @return whether the rect is intersecting any block in the whole world.
 	 */
-	public boolean isFieldFree(Rectangle rect) {
+	public boolean rectCollidesBlocks(Rectangle rect) {
 		int beginx = (int) (rect.x / ResLoader.BLOCK_SIZE);
 		int beginy = (int) (rect.y / ResLoader.BLOCK_SIZE);
 		int endx = (int) ((rect.x + rect.w) / ResLoader.BLOCK_SIZE) + 1;

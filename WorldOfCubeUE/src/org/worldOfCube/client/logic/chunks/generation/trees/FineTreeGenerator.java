@@ -18,61 +18,78 @@ import org.worldOfCube.client.util.bresenhamline.Placer;
  * @see org.worldOfCube.client.logic.chunks.generation.trees.FineRootGenerator
  */
 public class FineTreeGenerator implements TreeGenerator {
-	
+
 	private class TreewoodPlacer implements PlaceAction {
-		
+
 		private ChunkManager cm;
-		
+
 		public TreewoodPlacer(ChunkManager cm) {
 			this.cm = cm;
 		}
-		
+
+		@Override
 		public void action(int x, int y) {
 			cm.addBlock(x, y, new BlockTreewood(false), false);
 			cm.addBlock(x+1, y, new BlockTreewood(false), false);
+			cm.addBlock(x+1, y+1, new BlockTreewood(false), false);
 			cm.addBlock(x, y+1, new BlockTreewood(false), false);
-			cm.addBlock(x, y-1, new BlockTreewood(false), false);
-			cm.addBlock(x-1, y, new BlockTreewood(false), false);
 		}
 	}
-	
+
 	private class LeavesPlacer implements PlaceAction {
-		
+
 		private ChunkManager cm;
-		
+
 		public LeavesPlacer(ChunkManager cm) {
 			this.cm = cm;
 		}
-		
+
+		@Override
 		public void action(int x, int y) {
 			cm.addBlock(x, y, new BlockLeaves(true), true);
 		}
 	}
 
-	private Random rand;
-	private TreewoodPlacer twp;
-	private LeavesPlacer lp;
-	private World world;
-	
+	protected final Random rand;
+	protected final TreewoodPlacer twp;
+	protected final LeavesPlacer lp;
+	protected final World world;
+
 	public FineTreeGenerator(Random rand, World world) {
 		this.rand = rand;
 		this.world = world;
 		twp = new TreewoodPlacer(world.getChunkManager());
 		lp = new LeavesPlacer(world.getChunkManager());
 	}
-	
+
+	/* (non-Javadoc)
+	 * @see org.worldOfCube.client.logic.chunks.generation.trees.TreeGenerator#getWoodPlacer()
+	 */
+	@Override
 	public double getMinimalDist() {
 		return 3.0;
 	}
-	
+
+	/* (non-Javadoc)
+	 * @see org.worldOfCube.client.logic.chunks.generation.trees.TreeGenerator#getWoodPlacer()
+	 */
+	@Override
 	public double deriveRotation(double prerot) {
 		return prerot + (rand.nextBoolean() ? -(rand.nextDouble()*20.0+20.0) : rand.nextDouble()*20.0+20.0);
 	}
-	
+
+	/* (non-Javadoc)
+	 * @see org.worldOfCube.client.logic.chunks.generation.trees.TreeGenerator#getWoodPlacer()
+	 */
+	@Override
 	public double deriveDistance(double predist) {
 		return predist / (1.0+(rand.nextDouble()/2.0));
 	}
-	
+
+	/* (non-Javadoc)
+	 * @see org.worldOfCube.client.logic.chunks.generation.trees.TreeGenerator#getWoodPlacer()
+	 */
+	@Override
 	public void build(TreeLog tl, Random rand) {
 		if (tl.childs.size() != 0) {
 			for (int i = 0; i < tl.childs.size(); i++) {
@@ -82,5 +99,21 @@ public class FineTreeGenerator implements TreeGenerator {
 			Placer.circle((int)tl.pos.x, (int)tl.pos.y, 2.0+rand.nextDouble()*3, lp, world);
 		}
 	}
-	
+
+	/* (non-Javadoc)
+	 * @see org.worldOfCube.client.logic.chunks.generation.trees.TreeGenerator#getWoodPlacer()
+	 */
+	@Override
+	public PlaceAction getWoodPlacer() {
+		return twp;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.worldOfCube.client.logic.chunks.generation.trees.TreeGenerator#getLeavesPlacer()
+	 */
+	@Override
+	public PlaceAction getLeavesPlacer() {
+		return lp;
+	}
+
 }

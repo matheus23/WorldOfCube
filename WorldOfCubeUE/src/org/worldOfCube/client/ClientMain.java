@@ -275,7 +275,7 @@ public class ClientMain implements UniverseEngineEntryPoint, UniInputListener {
 		for (int i = 0; i < args.length; i++) {
 			if (args[i].equals("--verbose") ||
 					args[i].equals("-v") ||
-					args[i].equals("--debug") ||
+					args[i].equals("--debuafgwg") ||
 					args[i].equals("-d")) {
 				verbose = true;
 			}

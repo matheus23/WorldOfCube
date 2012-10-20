@@ -15,6 +15,12 @@ import org.worldOfCube.client.util.Distance;
 
 public class MouseCursor implements WorldInputListener {
 
+	public static enum State {
+		NONE,
+		DESTROYING,
+		BUILDING
+	}
+
 	/** Only calculate mouse actions every second frame */
 	public static final int DELAY = 2;
 	/** The distance to be able to place blocks */
@@ -29,9 +35,11 @@ public class MouseCursor implements WorldInputListener {
 	protected boolean pressedF;
 	protected ItemStack stack; // TODO: Implement this "stack"-feature.
 	protected int count = 0;
+	protected State state;
 
 	public MouseCursor(String playerName) {
 		this.playerName = playerName;
+		this.state = State.NONE;
 	}
 
 	/**
@@ -111,23 +119,18 @@ public class MouseCursor implements WorldInputListener {
 	 */
 	@Override
 	public void handleMouseEvent(int mousex, int mousey, int button, boolean down, World world) {
-		int x = ((int) world.convertXToWorld(mousex)) / ResLoader.BLOCK_SIZE;
-		int y = ((int) world.convertYToWorld(mousey)) / ResLoader.BLOCK_SIZE;
-		EntityPlayer ep = world.getPlayer(playerName);
-		int bx = (int) (ep.midx()/ResLoader.BLOCK_SIZE);
-		int by = (int) (ep.midy()/ResLoader.BLOCK_SIZE);
-		int dist = Distance.get(x, y, bx, by);
-
-		if (down && dist < BLOCK_PLACE_DIST) {
+		if (down) {
 			switch (button) {
 			case 0:
-				blockAction(BLOCK_REMOVE, x, y, ep, world);
-				count = DELAY;
+				state = State.DESTROYING;
 				break;
 			case 1:
-				blockAction(BLOCK_ADD, x, y, ep, world);
-				count = DELAY;
+				state = State.BUILDING;
 				break;
+			}
+		} else {
+			if (button == 0 || button == 1) {
+				state = State.NONE;
 			}
 		}
 	}
@@ -137,6 +140,29 @@ public class MouseCursor implements WorldInputListener {
 	 */
 	@Override
 	public void handleMousePosition(int mousex, int mousey, World world) {
+		if (state != State.NONE) {
+			int x = ((int) world.convertXToWorld(mousex)) / ResLoader.BLOCK_SIZE;
+			int y = ((int) world.convertYToWorld(mousey)) / ResLoader.BLOCK_SIZE;
+			EntityPlayer ep = world.getPlayer(playerName);
+			int bx = (int) (ep.midx()/ResLoader.BLOCK_SIZE);
+			int by = (int) (ep.midy()/ResLoader.BLOCK_SIZE);
+			int dist = Distance.get(x, y, bx, by);
+
+			if (dist < BLOCK_PLACE_DIST) {
+				switch (state) {
+				case DESTROYING:
+					blockAction(BLOCK_REMOVE, x, y, ep, world);
+					count = DELAY;
+					break;
+				case BUILDING:
+					blockAction(BLOCK_ADD, x, y, ep, world);
+					count = DELAY;
+					break;
+				case NONE:
+					break;
+				}
+			}
+		}
 	}
 
 }

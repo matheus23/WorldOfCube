@@ -66,7 +66,7 @@ public class LightUpdater {
 				}
 				PerfMonitor.stopProfile("LIGHT UPDATE");
 				try {
-					Thread.sleep(0);
+					Thread.sleep(5);
 				} catch (InterruptedException e) {
 					Log.out("LightUpdater-Thread got interrupted. Exiting normally.");
 					return;
@@ -88,7 +88,7 @@ public class LightUpdater {
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param cm an instance of ChunkManager, to effect lights on Chunks.
 	 */
 	public LightUpdater(ChunkManager cm) {
@@ -130,7 +130,7 @@ public class LightUpdater {
 		updater.interrupt();
 	}
 
-	public void tick(Rectangle viewport) {
+	public void tick(double delta, Rectangle viewport) {
 		// TODO: Add Day/Night-cycle!
 		update(viewport);
 	}
@@ -140,7 +140,7 @@ public class LightUpdater {
 	 * Lighting updater Thread.
 	 * The whole Lighting system is double-buffered, to make Threaded
 	 * Lighting look good. See the class Chunk for more information.
-	 * 
+	 *
 	 * @param wx current pixel-space view x coordinate.
 	 * @param wy current pixel-space view y coordinate.
 	 * @param ww current viewport width in pixels.
@@ -151,7 +151,7 @@ public class LightUpdater {
 		int beginx = (int) (viewport.x/(cManager.getChunkSize()*ResLoader.BLOCK_SIZE)-1);
 		int beginy = (int) (viewport.y/(cManager.getChunkSize()*ResLoader.BLOCK_SIZE)-1);
 		int endx = (int) ((viewport.x+viewport.w)/(cManager.getChunkSize()*ResLoader.BLOCK_SIZE)+2);
-		int endy = (int) ((viewport.x+viewport.h)/(cManager.getChunkSize()*ResLoader.BLOCK_SIZE)+2);
+		int endy = (int) ((viewport.y+viewport.h)/(cManager.getChunkSize()*ResLoader.BLOCK_SIZE)+2);
 		beginx = Math.max(0, beginx);
 		beginy = Math.max(0, beginy);
 		endx = Math.min(cManager.getSize()-1, endx);
@@ -180,7 +180,7 @@ public class LightUpdater {
 
 	/**
 	 * Updates a light source.
-	 * 
+	 *
 	 * @param lx pixel-space light x position.
 	 * @param ly pixel-space light y position.
 	 * @param rl a pre-rendered Representation of a this Light.
@@ -193,7 +193,7 @@ public class LightUpdater {
 	 * This is an Algorithm to calculate a Light, which
 	 * takes Walls into account. Blocks will stop light
 	 * by a specific amount (specified by Block.getLightWallness()).
-	 * 
+	 *
 	 * @param x the current world-space x position the Method is working on, used for the recursive Iteration.
 	 * @param y the current world-space y position the Method is working on, used for the recursive Iteration.
 	 * @param midx the middle world-space x position from the light source.
@@ -229,7 +229,7 @@ public class LightUpdater {
 	 * time to calculate.
 	 * To calculate the light, this calls "floodFillLight(Chunk, RenderedLight)",
 	 * with the given argument "light" and every Chunk form the ChunkManager.
-	 * 
+	 *
 	 * @param light the pre-rendered light to use as surface-light.
 	 */
 	private void floodFillLight(RenderedLight light) {
@@ -247,7 +247,7 @@ public class LightUpdater {
 	 * then it sets the light at (x, y) to "light".getStrength().
 	 * If the above is the case AND (x, y) has a surrounding block,
 	 * then it updates a light source with updateLightSource(int, int, RenderedLight).
-	 * 
+	 *
 	 * @param c the Chunk to calculate the surface lights for.
 	 * @param light the pre-rendered surface light to use.
 	 */

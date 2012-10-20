@@ -17,10 +17,11 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.universeengine.display.UniDisplay;
 import org.worldOfCube.client.ClientMain;
+import org.worldOfCube.client.input.InputListener;
 import org.worldOfCube.client.res.ResLoader;
 import org.worldOfCube.client.util.StateManager;
 
-public abstract class Screen {
+public abstract class Screen implements InputListener {
 
 	protected UniDisplay display;
 	protected ClientMain mep;
@@ -126,10 +127,13 @@ public abstract class Screen {
 		handleMousePosition(Mouse.getX(), (display.getHeight()-1) - Mouse.getY());
 	}
 
+	@Override
 	public abstract void handleKeyEvent(int keyCode, char keyChar, boolean down);
 
+	@Override
 	public abstract void handleMouseEvent(int mousex, int mousey, int button, boolean down);
 
+	@Override
 	public abstract void handleMousePosition(int mousex, int mousey);
 
 	public double getDelta() {

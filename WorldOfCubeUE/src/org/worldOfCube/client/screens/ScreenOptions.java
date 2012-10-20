@@ -9,7 +9,7 @@ import org.worldOfCube.client.screens.gui.BoxOptions;
 import org.worldOfCube.client.util.Config;
 
 public class ScreenOptions extends Screen implements BoxLabelListener {
-	
+
 	private BoxLabel buttonBack;
 	private BoxOptions buttonVSync;
 	private BoxOptions buttonBlockRendering;
@@ -20,9 +20,9 @@ public class ScreenOptions extends Screen implements BoxLabelListener {
 	public ScreenOptions(UniDisplay display, ClientMain mep, ScreenPause sp) {
 		super(display, mep, 0.1f, 0.1f, 0.1f, 0f);
 		this.sp = sp;
-		
+
 		buttonBack = new BoxLabel("Back", this);
-		
+
 		BoxOptionCycle opt = new BoxOptionCycle(mep.vsync ? 0 : 1, "on", "off");
 		opt.withInfoText(
 				"If set to \"on\", this will\n" +
@@ -35,7 +35,7 @@ public class ScreenOptions extends Screen implements BoxLabelListener {
 				" - whether to set the Frame-\n" +
 				"   rate to the monitor's\n" +
 				"   refresh-rate.");
-		
+
 		BoxOptionCycle opt2 = new BoxOptionCycle(Config.getRestart("block_rendering").equals("imm") ? 0 : 1, "IMM", "VAO");
 		opt2.withInfoText(
 				"Which techneque to use for\n" +
@@ -53,7 +53,7 @@ public class ScreenOptions extends Screen implements BoxLabelListener {
 				"the blocks look.\n" +
 				"Optins will be applied after\n" +
 				"you restart the game.");
-		
+
 		BoxOptionCycle opt3 = new BoxOptionCycle(Config.get("debug").equals("on") ? 0 : 1, "on", "off");
 		opt3.withInfoText(
 				"Enable or Disable Debug\n" +
@@ -62,7 +62,7 @@ public class ScreenOptions extends Screen implements BoxLabelListener {
 		buttonDebug.withInfoText(
 				"Enable or Disable Debug\n" +
 				"information.");
-		
+
 		BoxOptionCycle opt4 = new BoxOptionCycle(Config.get("show_fps").equals("true") ? 0 : 1, "on", "off");
 		opt4.withInfoText(
 				"If this Option is set\n" +
@@ -79,7 +79,7 @@ public class ScreenOptions extends Screen implements BoxLabelListener {
 				"and Delta time will be \n" +
 				"shown in the top right\n" +
 				"corner ingame.");
-		
+
 		recalcButtons(display.getWidth(), display.getHeight());
 	}
 
@@ -94,13 +94,14 @@ public class ScreenOptions extends Screen implements BoxLabelListener {
 	 */
 	@Override
 	public void handleMouseEvent(int mousex, int mousey, int button, boolean down) {}
-	
+
 	/* (non-Javadoc)
 	 * @see org.worldOfCube.client.screens.Screen#handleMousePosition(int, int)
 	 */
 	@Override
 	public void handleMousePosition(int mousex, int mousey) {}
-	
+
+	@Override
 	public void tick() {
 		buttonBack.tick(display);
 		buttonVSync.tick(display);
@@ -108,16 +109,17 @@ public class ScreenOptions extends Screen implements BoxLabelListener {
 		buttonDebug.tick(display);
 		buttonShowFPS.tick(display);
 	}
-	
+
+	@Override
 	public void render() {
 		fillStandardBackground();
-		
+
 		buttonBack.render();
 		buttonVSync.render();
 		buttonBlockRendering.render();
 		buttonDebug.render();
 		buttonShowFPS.render();
-		
+
 		buttonBack.renderTwo();
 		buttonVSync.renderTwo();
 		buttonBlockRendering.renderTwo();
@@ -125,30 +127,34 @@ public class ScreenOptions extends Screen implements BoxLabelListener {
 		buttonShowFPS.renderTwo();
 		renderCursor();
 	}
-	
+
+	@Override
 	public void resize(int neww, int newh) {
 		recalcButtons(neww, newh);
 	}
 
+	@Override
 	public void screenRemove() {
 		boolean vsync = buttonVSync.getOptionBox().getSelectedOption().equals("on");
 		mep.setVSync(vsync);
 		Config.set("vsync", vsync ? "on" : "off");
-		Config.setRestart("block_rendering", 
+		Config.setRestart("block_rendering",
 				buttonBlockRendering.getOptionBox().getSelectedOption().equals("IMM") ? "imm" : "vao");
 		Config.set("debug", buttonDebug.getOptionBox().getSelectedOption().equals("on") ? "on" : "off");
 		Config.set("show_fps", buttonShowFPS.getOptionBox().getSelectedOption().equals("on") ? "true" : "false");
 	}
 
+	@Override
 	public void boxPressed(BoxLabel bl) {
 	}
 
+	@Override
 	public void boxReleased(BoxLabel bl) {
 		if (bl.equals(buttonBack)) {
 			mep.setScreen(sp);
 		}
 	}
-	
+
 	public void recalcButtons(int w, int h) {
 		buttonBack.getBox().set((int)(0.7f*w), (int)(0.9f*h), (int)(0.3f*w), (int)(0.1f*h));
 		buttonVSync.set((int)(0.1*w), (int)(0.2*h), (int)(0.8*w), (int)(0.1*h));
@@ -156,7 +162,8 @@ public class ScreenOptions extends Screen implements BoxLabelListener {
 		buttonDebug.set((int)(0.1*w), (int)(0.4*h), (int)(0.8*w), (int)(0.1*h));
 		buttonShowFPS.set((int)(0.1*w), (int)(0.5*h), (int)(0.8*w), (int)(0.1*h));
 	}
-	
+
+	@Override
 	public String getCaption() {
 		return "Options Screen";
 	}

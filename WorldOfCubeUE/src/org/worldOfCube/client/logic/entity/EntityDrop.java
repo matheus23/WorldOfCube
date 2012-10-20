@@ -61,9 +61,9 @@ public class EntityDrop extends Entity {
 			collectable = true;
 		} else {
 			dx *= 0.9f; // De-Acceleration
-			dy += World.GRAVITY*delta;
-			move(dx*delta, dy*delta, world);
 		}
+		dy += World.GRAVITY*delta;
+		move(dx*delta, dy*delta, world);
 		afterTick(delta);
 	}
 

@@ -138,6 +138,14 @@ public class BoxInputLabel implements GUIElement, InputListener {
 		}
 	}
 
+	public boolean isSelected() {
+		return selected;
+	}
+
+	public void setSelected(boolean selected) {
+		this.selected = selected;
+	}
+
 	/* (non-Javadoc)
 	 * @see org.worldOfCube.client.input.InputListener#handleKeyEvent(int, char, boolean)
 	 */

@@ -154,6 +154,10 @@ public class EntityPlayer extends Entity {
 		}
 	}
 
+	public boolean collect(EntityDrop drop) {
+		return compInv.add(drop.getItem());
+	}
+
 	@Override
 	public void handleKeyEvent(int keyCode, char keyChar, boolean down, World world) {
 		if (keyCode == Keyboard.KEY_G && down) {

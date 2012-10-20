@@ -2,8 +2,10 @@ package org.worldOfCube.client.logic.chunks.generation;
 
 import java.util.Random;
 
+import org.matheusdev.interpolation.FloatInterpolation;
 import org.matheusdev.interpolation.FloatInterpolationCubicSpline;
 import org.matheusdev.noises.noise1.SimplexNoise1;
+import org.matheusdev.noises.noise1.SimplexNoiseLayer1;
 import org.worldOfCube.Log;
 import org.worldOfCube.client.logic.chunks.World;
 import org.worldOfCube.client.logic.chunks.generation.cave.CaveGenerator;
@@ -20,17 +22,42 @@ public class Generator {
 	protected static enum Layer {
 		SURFACE,
 		TREE_DENSITY,
-		TREES
 	}
 
 	protected static enum Side {
-		TOP, RIGHT, BOTTOM, LEFT;
+		LEFT(270, true, false, false), TOP(180, false, false, false), RIGHT(90, true, true, false), BOTTOM(0, false, false, true);
+
+		public final int degree;
+		protected final boolean swit;
+		protected final boolean invX;
+		protected final boolean invY;
+
+		Side(int degree, boolean swit, boolean invX, boolean invY) {
+			this.degree = degree;
+			this.swit = swit;
+			this.invX = invX;
+			this.invY = invY;
+		}
 
 		public Side toRight() {
 			return values()[(ordinal()+1)%4];
 		}
 		public Side toLeft() {
 			return values()[(ordinal()+3)%4];
+		}
+		public int unpackX(int x, int y, int invVal) {
+			if (swit) {
+				return invX ? invVal - y : y;
+			} else {
+				return invX ? invVal - x : x;
+			}
+		}
+		public int unpackY(int x, int y, int invVal) {
+			if (swit) {
+				return invY ? invVal - x : x;
+			} else {
+				return invY ? invVal - y : y;
+			}
 		}
 	}
 
@@ -82,14 +109,13 @@ public class Generator {
 				return (((val + 1) / 2) * 32f) + (fsize / 8);
 			}
 		});
-		genSimplexNoise(Layer.TREE_DENSITY, 4, new NoiseModifier() {
+		genSmoothSimplexNoise(Layer.TREE_DENSITY, 4, new NoiseModifier() {
 			@Override
 			public float modify(float val) {
-				float newVal = ((val + 1) / 2) * 16f;
+				float newVal = ((val + 1) / 2) * 6f;
 				return newVal - (int) newVal;
 			}
 		});
-		genTreePosibility(Layer.TREE_DENSITY, Layer.TREES, 10);
 
 		/*
 		 * Now we generate Caves:
@@ -117,30 +143,29 @@ public class Generator {
 		}
 	}
 
-	protected void genTreePosibility(Layer valueNoiseLayer, Layer dstLayer, float treedensity) {
-		int src = valueNoiseLayer.ordinal();
-		int dst = dstLayer.ordinal();
-
+	protected void genSmoothSimplexNoise(Layer layer, final int octaves, NoiseModifier modifier) {
+		int pos = layer.ordinal();
 		for (Side side : Side.values()) {
-			vals[side.ordinal()][dst] = genTreePossibilitySide(vals[side.ordinal()][src], treedensity);
-		}
-	}
+			FloatInterpolation interp = new FloatInterpolationCubicSpline();
+			SimplexNoise1 noise = new SimplexNoise1(size,
+					new SimplexNoiseLayer1[] {
+							new SimplexNoiseLayer1(size, 64, rand, interp),
+							new SimplexNoiseLayer1(size, 32, rand, interp)
+					}, new float[] {
+						2, 1
+					}, rand);
+			if (modifier != null) {
 
-	/**
-	 * <p>Creates the array for tree possibilities.</p>
-	 * @param src the noise source array (should be range 0-1).
-	 * @param treedensity specifies the density for the trees.
-	 * @return the generated array of tree possibilities.
-	 */
-	protected float[] genTreePossibilitySide(float[] src, float treedensity) {
-		float t = 0;
-		float[] dst = new float[src.length];
+				float[] noiseVals = noise.get();
+				vals[side.ordinal()][pos] = new float[noiseVals.length];
 
-		for (int i = 0; i < src.length; i++) {
-			t += ((1 + src[i]) / (treedensity * 2));
-			dst[i] = (float) (-Math.abs(Math.cos(t)))+1;
+				for (int i = 0; i < vals[side.ordinal()][pos].length; i++) {
+					vals[side.ordinal()][pos][i] = modifier.modify(noiseVals[i]);
+				}
+			} else {
+				vals[side.ordinal()][pos] = noise.get();
+			}
 		}
-		return dst;
 	}
 
 	/**
@@ -164,7 +189,7 @@ public class Generator {
 	private void genTrees(World world) {
 		//TODO: Add load progress stuff again.
 		for (Side side : Side.values()) {
-			genTreesOnSide(world, vals[side.ordinal()][Layer.SURFACE.ordinal()], side);
+			genTreesOnSide(world, side);
 		}
 	}
 
@@ -181,33 +206,24 @@ public class Generator {
 	 * @param surface an array, describing the surface of the specific side of the world.
 	 * @param side the side of the world. Either Side.TOP, Side.LEFT, Side.BOTTOM, Side.RIGHT
 	 */
-	public void genTreesOnSide(World world, float[] surface, Side side) {
-		double rotation;
+	public void genTreesOnSide(World world, Side side) {
+		float[] surface = vals[side.ordinal()][Layer.SURFACE.ordinal()];
+		float[] trees = vals[side.ordinal()][Layer.TREE_DENSITY.ordinal()];
 
-		switch (side) {
-		case TOP:
-			rotation = 180.0;
-			break;
-		case LEFT:
-			rotation = 270.0;
-			break;
-		case BOTTOM:
-			rotation = 0.0;
-			break;
-		case RIGHT:
-			rotation = 90.0;
-			break;
-		default:
-			throw new IllegalArgumentException("side != (LEFT or RIGHT or TOP or BOTTOM)");
-		}
+		float diff = 0;
+		int lastTree = 0;
 
 		for (int i = 0; i < surface.length; i++) {
-			if (isSideValid(i, side, Layer.SURFACE)) {
-				float validation = 0.2f;
-				validation += rand.nextFloat()/3;
+			diff = Math.abs(trees[i] - trees[(i+1) % trees.length]);
 
-				if (vals[side.ordinal()][Layer.TREES.ordinal()][i] > validation) {
-					genTree(i, (int)vals[side.ordinal()][Layer.SURFACE.ordinal()][i], rotation, world);
+			if (diff >= 0.5f) {
+				int x = side.unpackX(i, (int)surface[i], world.totalBlocks);
+				int y = side.unpackY(i, (int)surface[i], world.totalBlocks);
+
+				if (isValid(x, y, -1)) {
+					genTree(x, y, side.degree, Math.abs(i - lastTree) > 32, world);
+
+					lastTree = i;
 				}
 			}
 		}
@@ -218,9 +234,8 @@ public class Generator {
 	 * @see org.worldOfCube.client.logic.chunks.generation.trees.Tree#Tree(int, int, double, double, TreeGenerator, TreeGenerator)
 	 * @see org.worldOfCube.client.logic.chunks.generation.trees.Tree#build(org.worldOfCube.client.logic.chunks.ChunkManager, Random)
 	 */
-	private void genTree(int x, int y, double dir, World world) {
-		boolean bigTree = (rand.nextInt()%20) < 5;
-		double length = bigTree ? 6.0+rand.nextDouble()*4 : 4.0+rand.nextDouble()*2;
+	private void genTree(int x, int y, double dir, boolean bigTree, World world) {
+		double length = bigTree ? 4.0 + rand.nextDouble()*2 : 3.0 + rand.nextDouble()*2;
 		TreeGenerator tg = bigTree ? bigTreeGen : littleTreeGen;
 		TreeGenerator rg = bigTree ? bigRootGen : littleRootGen;
 		new Tree(x, y, dir+(rand.nextDouble()*40.0)-20.0, length, tg, rg).build(world.getChunkManager(), rand);
@@ -263,17 +278,6 @@ public class Generator {
 				&& isValid(x, y, offset, Side.RIGHT)
 				&& isValid(x, y, offset, Side.TOP)
 				&& isValid(x, y, offset, Side.BOTTOM);
-	}
-
-	public boolean isSideValid(int i, Side side, Layer layer) {
-		return isSideValid(i, side, layer, 0);
-	}
-
-	public boolean isSideValid(int i, Side side, Layer layer, float offset) {
-		int l = layer.ordinal();
-		int s = side.ordinal();
-		return 	i > vals[s][l][(int)(vals[side.toLeft().ordinal()][l][i] - offset)] &&
-				i < vals[s][l][(int)(vals[side.toRight().ordinal()][l][i] + offset)];
 	}
 
 	private boolean isValid(int x, int y, int offset, Side side) {

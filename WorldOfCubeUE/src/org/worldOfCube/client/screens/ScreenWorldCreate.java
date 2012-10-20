@@ -60,6 +60,11 @@ public class ScreenWorldCreate extends Screen implements BoxLabelListener, BoxIn
 	public void handleKeyEvent(int keyCode, char keyChar, boolean down) {
 		if (keyCode == Keyboard.KEY_ESCAPE && down) {
 			mep.setScreen(new ScreenWorlds(display, mep));
+		} else if (keyCode == Keyboard.KEY_TAB) {
+			if (inputName.isSelected()) {
+				inputName.setSelected(false);
+				inputSeed.setSelected(true);
+			}
 		} else {
 			inputName.handleKeyEvent(keyCode, keyChar, down);
 			inputSeed.handleKeyEvent(keyCode, keyChar, down);

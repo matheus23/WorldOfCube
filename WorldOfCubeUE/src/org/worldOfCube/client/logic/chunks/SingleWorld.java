@@ -126,7 +126,9 @@ public class SingleWorld extends World {
 					"or the world which was created is truly little :)");
 		}
 		// Now update lights :)
-		light.tick(viewport);
+		light.tick(delta, viewport);
+
+		cursor.tick(viewport, this);
 	}
 
 	/**

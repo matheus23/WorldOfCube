@@ -6,7 +6,7 @@ import org.worldOfCube.client.screens.gui.BoxLabel;
 import org.worldOfCube.client.screens.gui.Loadbar;
 
 public class ScreenLoading extends Screen {
-	
+
 	private Loadable todo;
 	private BoxLabel label;
 	private Loadbar loadbar;
@@ -16,14 +16,14 @@ public class ScreenLoading extends Screen {
 		super(display, mep, 0f, 0f, 0f, 0f);
 		this.todo = todo;
 		this.drawBackground = drawBackground;
-		
+
 		label = new BoxLabel(todo.getTitle());
 		label.getBox().setAlpha(0f);
-		
+
 		loadbar = new Loadbar(0, 0, 1);
-		
+
 		recalcButtons(display.getWidth(), display.getHeight());
-		
+
 		new Thread(todo).start();
 	}
 
@@ -38,7 +38,7 @@ public class ScreenLoading extends Screen {
 	 */
 	@Override
 	public void handleMouseEvent(int mousex, int mousey, int button, boolean down) {}
-	
+
 	/* (non-Javadoc)
 	 * @see org.worldOfCube.client.screens.Screen#handleMousePosition(int, int)
 	 */
@@ -73,18 +73,21 @@ public class ScreenLoading extends Screen {
 		renderCursor();
 	}
 
+	@Override
 	public void resize(int neww, int newh) {
 		recalcButtons(neww, newh);
 	}
 
+	@Override
 	public void screenRemove() {
 	}
-	
+
 	public void recalcButtons(int w, int h) {
 		label.getBox().set((int)(0.3*w), (int)(0.45*h), (int)(0.4*w), (int)(0.1*h));
 		loadbar.set((int)(0.5*w), (int)(0.55*h), (int)(0.3*w));
 	}
-	
+
+	@Override
 	public String getCaption() {
 		return "Loading Screen";
 	}
