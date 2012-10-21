@@ -94,7 +94,7 @@ public class FineRootGenerator implements TreeGenerator {
 	@Override
 	public void build(TreeLog tl, Random rand) {
 		for (int i = 0; i < tl.childs.size(); i++) {
-			Placer.line((int)tl.pos.x, (int)tl.pos.y, (int)tl.childs.get(i).pos.x, (int)tl.childs.get(i).pos.y, twp);
+			Placer.line((int)tl.pos.x, (int)tl.pos.y, (int)tl.childs.get(i).pos.x, (int)tl.childs.get(i).pos.y, twp, false);
 		}
 	}
 

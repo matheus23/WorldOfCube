@@ -30,45 +30,59 @@ public final class Placer {
 	private Placer() {
 	}
 
-	public static void line(int x1, int y1, int x2, int y2, PlaceAction la) {
-		if ((x1 - x2) > 0) {
-			line(x2, y2, x1, y1, la);
+	public static void line(int x0, int y0, int x1, int y1, PlaceAction placer, boolean touchingEdges) {
+		if ((x0 - x1) > 0) {
+			line(x1, y1, x0, y0, placer, touchingEdges);
 			return;
 		}
-		if (Math.abs(y2 - y1) > Math.abs(x2 - x1)) {
-			line2(y1, x1, y2, x2, la);
+		if (Math.abs(y1 - y0) > Math.abs(x1 - x0)) {
+			line2(y0, x0, y1, x1, placer, touchingEdges);
 			return;
 		}
-		int x = x1, y = y1, sum = x2 - x1, dx = 2 * (x2 - x1), dy = Math.abs(2 * (y2 - y1));
-		int prirastokDy = ((y2 - y1) > 0) ? 1 : -1;
+		int x = x0;
+		int y = y0;
+		int sum = x1 - x0;
+		int dx = 2 * (x1 - x0);
+		int dy = Math.abs(2 * (y1 - y0));
+		int neededDy = ((y1 - y0) > 0) ? 1 : -1;
 
-		for (int i = 0; i <= x2 - x1; i++) {
-			la.action(x, y);
+		for (int i = 0; i <= x1 - x0; i++) {
+			placer.action(x, y);
 			x++;
 			sum -= dy;
 			if (sum < 0) {
-				y = y + prirastokDy;
+				if (touchingEdges) {
+					placer.action(x, y);
+				}
+				y = y + neededDy;
 				sum += dx;
 			}
 		}
 	}
 
-	private static void line2(int x3, int y3, int x4, int y4, PlaceAction la) {
-		if ((x3 - x4) > 0) {
-			line2(x4, y4, x3, y3, la);
+	private static void line2(int x0, int y0, int x1, int y1, PlaceAction placer, boolean touchingEdges) {
+		if ((x0 - x1) > 0) {
+			line2(x1, y1, x0, y0, placer, touchingEdges);
 			return;
 		}
 
-		int x = x3, y = y3, sum = x4 - x3, Dx = 2 * (x4 - x3), Dy = Math.abs(2 * (y4 - y3));
-		int prirastokDy = ((y4 - y3) > 0) ? 1 : -1;
+		int x = x0;
+		int y = y0;
+		int sum = x1 - x0;
+		int dx = 2 * (x1 - x0);
+		int dy = Math.abs(2 * (y1 - y0));
+		int neededDy = ((y1 - y0) > 0) ? 1 : -1;
 
-		for (int i = 0; i <= x4 - x3; i++) {
-			la.action(y, x);
+		for (int i = 0; i <= x1 - x0; i++) {
+			placer.action(y, x);
 			x++;
-			sum -= Dy;
+			sum -= dy;
 			if (sum < 0) {
-				y = y + prirastokDy;
-				sum += Dx;
+				if (touchingEdges) {
+					placer.action(y, x);
+				}
+				y = y + neededDy;
+				sum += dx;
 			}
 		}
 	}

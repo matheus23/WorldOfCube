@@ -62,7 +62,7 @@ public class Tree {
 	 * @param rand an instance of Random to generate random values.
 	 */
 	public void build(ChunkManager cm, Random rand) {
-		Placer.line((int) firstRoot.pos.x, (int) firstRoot.pos.y, (int) firstLog.pos.x, (int) firstLog.pos.y, treeGen.getWoodPlacer());
+		Placer.line((int) firstRoot.pos.x, (int) firstRoot.pos.y, (int) firstLog.pos.x, (int) firstLog.pos.y, treeGen.getWoodPlacer(), true);
 		firstLog.build(rand);
 		firstRoot.build(rand);
 	}

@@ -114,7 +114,7 @@ public class FineTreeGenerator implements TreeGenerator {
 	public void build(TreeLog tl, Random rand) {
 		if (tl.childs.size() != 0) {
 			for (int i = 0; i < tl.childs.size(); i++) {
-				Placer.line((int)tl.pos.x, (int)tl.pos.y, (int)tl.childs.get(i).pos.x, (int)tl.childs.get(i).pos.y, twp);
+				Placer.line((int)tl.pos.x, (int)tl.pos.y, (int)tl.childs.get(i).pos.x, (int)tl.childs.get(i).pos.y, twp, false);
 			}
 		} else {
 			Placer.circle((int)tl.pos.x, (int)tl.pos.y, 2.0+rand.nextDouble()*3, lp, world);
