@@ -26,7 +26,7 @@ import java.io.IOException;
 import org.universeengine.display.UniDisplay;
 import org.worldOfCube.client.ClientMain;
 import org.worldOfCube.client.logic.chunks.SingleWorld;
-import org.worldOfCube.client.logic.chunks.WorldSaveManager;
+import org.worldOfCube.client.logic.chunks.WorldSaver;
 import org.worldOfCube.client.screens.gui.BoxLabel;
 import org.worldOfCube.client.screens.gui.BoxLabelListener;
 
@@ -123,7 +123,7 @@ public class ScreenPause extends Screen implements BoxLabelListener {
 				@Override
 				public void run() {
 					try {
-						WorldSaveManager.saveWorld(world);
+						WorldSaver.saveWorld(world);
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
@@ -151,7 +151,7 @@ public class ScreenPause extends Screen implements BoxLabelListener {
 		} else if (bl.equals(buttonOpt)) {
 			mep.setScreen(new ScreenOptions(display, mep, this));
 		} else if (bl.equals(buttonSave)) {
-			WorldSaveManager.saveSingleWorldThreaded(world);
+			WorldSaver.saveSingleWorldThreaded(world);
 		}
 	}
 

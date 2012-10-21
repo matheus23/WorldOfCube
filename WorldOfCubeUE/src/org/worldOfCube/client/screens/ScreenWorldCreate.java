@@ -28,7 +28,7 @@ import org.universeengine.display.UniDisplay;
 import org.worldOfCube.Log;
 import org.worldOfCube.client.ClientMain;
 import org.worldOfCube.client.logic.chunks.SingleWorld;
-import org.worldOfCube.client.logic.chunks.WorldSaveManager;
+import org.worldOfCube.client.logic.chunks.WorldSaver;
 import org.worldOfCube.client.logic.entity.EntityPlayer;
 import org.worldOfCube.client.res.GLFont;
 import org.worldOfCube.client.screens.gui.BoxInputLabel;
@@ -201,7 +201,7 @@ public class ScreenWorldCreate extends Screen implements BoxLabelListener, BoxIn
 	}
 
 	private boolean checkWorldName(StringBuilder strb) {
-		if (new File(WorldSaveManager.worldDirStr + "/" + strb.toString()).exists()) {
+		if (new File(WorldSaver.worldDirStr + "/" + strb.toString()).exists()) {
 			Log.out("World does already exist.");
 			return false;
 		}

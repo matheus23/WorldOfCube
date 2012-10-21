@@ -47,7 +47,7 @@ import org.worldOfCube.client.logic.inventory.ItemStack;
 import org.worldOfCube.client.logic.inventory.Storage;
 import org.worldOfCube.client.util.TimeUtil;
 
-public class WorldSaveManager {
+public class WorldSaver {
 
 	private class Saver implements Runnable {
 
@@ -71,6 +71,7 @@ public class WorldSaveManager {
 
 	private class PlayerInfo {
 		PlayerInfo() { inv = new Inventory(); }
+		String name;
 		float playerx;
 		float playery;
 		Inventory inv;
@@ -96,14 +97,14 @@ public class WorldSaveManager {
 	public static final byte INV_SLOT_FlAG = (byte)0xCC;
 	public static final byte INV_FLAG = (byte)0xDD;
 
-	private static WorldSaveManager instance;
+	private static WorldSaver instance;
 
 	private Saver runningSaver;
 
 	private long loaded = 1;
 	private long toLoad = 1;
 
-	private WorldSaveManager() {
+	private WorldSaver() {
 		if (!worldDir.exists()) {
 			worldDir.mkdir();
 		}
@@ -173,9 +174,9 @@ public class WorldSaveManager {
 				EntityPlayer ep = (EntityPlayer) e;
 
 				dos.writeByte(PLAYER_FLAG);
-				dos.writeBytes(ep.getName());
-				dos.writeFloat((float)ep.getRect().x);
-				dos.writeFloat((float)ep.getRect().y);
+				dos.writeUTF(ep.getName());
+				dos.writeFloat((float) ep.getRect().x);
+				dos.writeFloat((float) ep.getRect().y);
 
 				Inventory inv = ep.getInventory();
 				if (inv != null) {
@@ -260,7 +261,9 @@ public class WorldSaveManager {
 			toLoad = 1;
 
 			PlayerInfo playerInfo = wlp.players.get(0);
-			SingleWorld world = new SingleWorld(new EntityPlayer(playerInfo.playerx, playerInfo.playery, "Player"), cManager, name, display);
+			SingleWorld world = new SingleWorld(new EntityPlayer(0, 0, playerInfo.name), cManager, name, display);
+			world.getPlayer().getRect().x = playerInfo.playerx;
+			world.getPlayer().getRect().y = playerInfo.playery;
 			Log.out("World loaded (" + (TimeUtil.ms()-time) + " ms)");
 			return world;
 		} catch (IOException e) {
@@ -274,7 +277,7 @@ public class WorldSaveManager {
 	private WorldLoadPack loadHeader(DataInputStream dis) throws IOException {
 		WorldLoadPack pack = new WorldLoadPack();
 		pack.players = new ArrayList<PlayerInfo>();
-		PlayerInfo currentPlayer = new PlayerInfo();
+		PlayerInfo currentPlayer = null;
 		while(dis.available() > 1) {
 			byte b = dis.readByte();
 			switch (b) {
@@ -285,6 +288,7 @@ public class WorldSaveManager {
 			case PLAYER_FLAG:
 				if (currentPlayer != null) pack.players.add(currentPlayer);
 				currentPlayer = new PlayerInfo(); // Creates new Inventory instance in currentPlayer.inv
+				currentPlayer.name = dis.readUTF();
 				currentPlayer.playerx = dis.readFloat();
 				currentPlayer.playery = dis.readFloat();
 				break;
@@ -304,6 +308,8 @@ public class WorldSaveManager {
 					}
 				}
 				break;
+			default:
+				dis.skipBytes(1);
 			}
 		}
 		if (currentPlayer != null) pack.players.add(currentPlayer);
@@ -354,9 +360,9 @@ public class WorldSaveManager {
 		return ((float) loaded / (float) toLoad) * 100f;
 	}
 
-	private static WorldSaveManager inst() {
+	private static WorldSaver inst() {
 		if (instance == null) {
-			return instance = new WorldSaveManager();
+			return instance = new WorldSaver();
 		}
 		return instance;
 	}

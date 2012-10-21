@@ -35,7 +35,7 @@ import org.universeengine.display.UniDisplay;
 import org.worldOfCube.Log;
 import org.worldOfCube.client.ClientMain;
 import org.worldOfCube.client.logic.chunks.SingleWorld;
-import org.worldOfCube.client.logic.chunks.WorldSaveManager;
+import org.worldOfCube.client.logic.chunks.WorldSaver;
 import org.worldOfCube.client.res.ResLoader;
 import org.worldOfCube.client.screens.gui.BoxLabel;
 import org.worldOfCube.client.screens.gui.BoxLabelListener;
@@ -57,7 +57,7 @@ public class ScreenWorlds extends Screen implements BoxLabelListener {
 
 		scrollPanel = new ScrollPanel(100, 100, 6);
 
-		File[] worlds = WorldSaveManager.listWorlds();
+		File[] worlds = WorldSaver.listWorlds();
 		Log.out("Found " + worlds.length + " worlds.");
 		buttonWorlds = new BoxLabel[worlds.length];
 		for (int i = 0; i < worlds.length; i++) {
@@ -136,7 +136,7 @@ public class ScreenWorlds extends Screen implements BoxLabelListener {
 						@Override
 						public void run() {
 							try {
-								world = WorldSaveManager.loadSingleWorld(worldName, display);
+								world = WorldSaver.loadSingleWorld(worldName, display);
 								world.getChunkManager().updateAll();
 							} catch (IOException e) {
 								e.printStackTrace();
@@ -155,7 +155,7 @@ public class ScreenWorlds extends Screen implements BoxLabelListener {
 
 						@Override
 						public float getProgress() {
-							return  world == null ? Math.min(99f, WorldSaveManager.getLoaded()) : 100f;
+							return  world == null ? Math.min(99f, WorldSaver.getLoaded()) : 100f;
 						}
 					}));
 					return;
