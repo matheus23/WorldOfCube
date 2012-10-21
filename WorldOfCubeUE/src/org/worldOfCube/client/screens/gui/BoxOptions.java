@@ -31,7 +31,7 @@ public class BoxOptions extends BoxLabel {
 	private float division;
 
 	public BoxOptions(String label, BoxOptionCycle option, float division) {
-		super(0, 0, 1, 1, "", ResLoader.GUI_BORDER_BLUE);
+		super(0, 0, 1, 1, "", ResLoader.Sheets.GUI_BORDER_BLUE.ordinal());
 		this.label = new BoxLabel(label);
 		this.label.getBox().setAlpha(0f);
 		this.option = option;

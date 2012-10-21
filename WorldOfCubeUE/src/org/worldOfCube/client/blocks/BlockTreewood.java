@@ -25,10 +25,11 @@ import java.awt.Color;
 
 import org.worldOfCube.client.logic.chunks.Chunk;
 import org.worldOfCube.client.res.ResLoader;
+import org.worldOfCube.client.res.ResLoader.Blocks;
 
 public class BlockTreewood extends Block {
 
-	public static final int BLOCK_TEX = ResLoader.BLOCK_TREEWOOD;
+	public static final Blocks BLOCK_TEX = ResLoader.Blocks.TREEWOOD;
 	private static final Color awtCol = new Color(0x595d66);
 
 	public BlockTreewood(byte x, byte y, Chunk c, boolean foreground) {
@@ -73,7 +74,7 @@ public class BlockTreewood extends Block {
 
 	@Override
 	public boolean containsAlpha() {
-		return borderID != ResLoader.FILLED;
+		return borderID != ResLoader.TileTypes.FILLED.ordinal();
 	}
 
 }

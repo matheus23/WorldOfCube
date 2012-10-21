@@ -42,8 +42,8 @@ public class InventorySelector {
 			slots[i] = new ItemSlot(null);
 		}
 		rect = new Rectangle(offsetx, offsety,
-				ResLoader.GUI_INV_SLOT_SIZE,
-				slots.length*ResLoader.GUI_INV_SLOT_SIZE);
+				ResLoader.INV_SLOT_SIZE,
+				slots.length*ResLoader.INV_SLOT_SIZE);
 		setSelection(0);
 	}
 
@@ -68,7 +68,7 @@ public class InventorySelector {
 			int mx = WrappedMouse.getX();
 			int my = WrappedMouse.getY();
 			if (rect.contains(mx, my)) {
-				setSelection((int)(my-offsety)/ResLoader.GUI_INV_SLOT_SIZE);
+				setSelection((int)(my-offsety)/ResLoader.INV_SLOT_SIZE);
 			}
 		}
 		int dwheel = Mouse.getDWheel();
@@ -104,7 +104,7 @@ public class InventorySelector {
 
 	public void render() {
 		for (int i = 0; i < slots.length; i++) {
-			slots[i].render(offsetx, offsety+i*ResLoader.GUI_INV_SLOT_SIZE);
+			slots[i].render(offsetx, offsety+i*ResLoader.INV_SLOT_SIZE);
 		}
 	}
 

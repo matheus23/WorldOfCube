@@ -36,7 +36,7 @@ public class Loadbar implements GUIElement {
 
 	public Loadbar(int x, int y, int width) {
 		rect = new Rectangle();
-		box = new Box(0, 0, 1, 1, ResLoader.GUI_BORDER_NORMAL);
+		box = new Box(0, 0, 1, 1, ResLoader.Sheets.GUI_BORDER_NORMAL.ordinal());
 		set(x, y, width);
 	}
 
@@ -75,9 +75,9 @@ public class Loadbar implements GUIElement {
 	public void render() {
 		box.render();
 
-		Sprite left = ResLoader.get(ResLoader.GUI_LOADBAR, ResLoader.GUI_LOADBAR_LEFT);
-		Sprite mid = ResLoader.get(ResLoader.GUI_LOADBAR, ResLoader.GUI_LOADBAR_MID);
-		Sprite right = ResLoader.get(ResLoader.GUI_LOADBAR, ResLoader.GUI_LOADBAR_RIGHT);
+		Sprite left = ResLoader.get(ResLoader.Sheets.GUI_LOADBAR, ResLoader.Loadbars.LEFT.ordinal());
+		Sprite mid = ResLoader.get(ResLoader.Sheets.GUI_LOADBAR, ResLoader.Loadbars.MID.ordinal());
+		Sprite right = ResLoader.get(ResLoader.Sheets.GUI_LOADBAR, ResLoader.Loadbars.RIGHT.ordinal());
 
 		left.bindAndRender(rect.x, rect.y, 4, 8);
 		right.bindAndRender(rect.x+width-4, rect.y, 4, 8);

@@ -46,7 +46,7 @@ public class BoxLabel implements GUIElement {
 	private boolean showInfo;
 
 	public BoxLabel(String text) {
-		this(0, 0, 1, 1, text, 20, ResLoader.GUI_BORDER_BLUE);
+		this(0, 0, 1, 1, text, 20, ResLoader.Sheets.GUI_BORDER_BLUE.ordinal());
 	}
 
 	public BoxLabel(String text, int borderID, BoxLabelListener bll) {
@@ -55,12 +55,12 @@ public class BoxLabel implements GUIElement {
 	}
 
 	public BoxLabel(String text, BoxLabelListener bll) {
-		this(0, 0, 1, 1, text, 20, ResLoader.GUI_BORDER_BLUE);
+		this(0, 0, 1, 1, text, 20, ResLoader.Sheets.GUI_BORDER_BLUE.ordinal());
 		addBoxLabelListener(bll);
 	}
 
 	public BoxLabel(int x, int y, int w, int h, String text, BoxLabelListener bll) {
-		this(x, y, w, h, text, 20, ResLoader.GUI_BORDER_BLUE);
+		this(x, y, w, h, text, 20, ResLoader.Sheets.GUI_BORDER_BLUE.ordinal());
 		addBoxLabelListener(bll);
 	}
 
@@ -74,7 +74,7 @@ public class BoxLabel implements GUIElement {
 	}
 
 	public BoxLabel(int x, int y, int w, int h, String text) {
-		this(x, y, w, h, text, 20, ResLoader.GUI_BORDER_BLUE);
+		this(x, y, w, h, text, 20, ResLoader.Sheets.GUI_BORDER_BLUE.ordinal());
 	}
 
 	public BoxLabel(int x, int y, int w, int h, String text, int size, int borderSprite) {
@@ -169,7 +169,7 @@ public class BoxLabel implements GUIElement {
 					w += 10;
 				}
 			}
-			Box b = new Box(x-10, y-10, endw+20, h+20, ResLoader.GUI_BORDER_NORMAL);
+			Box b = new Box(x-10, y-10, endw+20, h+20, ResLoader.Sheets.GUI_BORDER_NORMAL.ordinal());
 			b.render();
 			GLFont.render(x, y, GLFont.ALIGN_LEFT, infoText, 10);
 		}

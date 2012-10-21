@@ -39,7 +39,7 @@ public class Inventory {
 		float offsetx = 10;
 		float offsety = 50;
 		is = new InventorySelector(offsetx, offsety);
-		storage = new Storage(offsetx+ResLoader.GUI_INV_SLOT_SIZE+INVENTORY_OFFSET, offsety, HORIZ_SLOTS, SLOTS);
+		storage = new Storage(offsetx+ResLoader.INV_SLOT_SIZE+INVENTORY_OFFSET, offsety, HORIZ_SLOTS, SLOTS);
 	}
 
 	public int getSelectionID() {

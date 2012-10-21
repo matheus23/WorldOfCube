@@ -28,10 +28,11 @@ import java.awt.Color;
 
 import org.worldOfCube.client.logic.chunks.Chunk;
 import org.worldOfCube.client.res.ResLoader;
+import org.worldOfCube.client.res.ResLoader.Blocks;
 
 public class BlockRock extends Block {
 
-	public static final int BLOCK_TEX = ResLoader.BLOCK_ROCK;
+	public static final Blocks BLOCK_TEX = ResLoader.Blocks.ROCK;
 	private static final Color awtCol = new Color(0x595d66);
 
 	public BlockRock(byte x, byte y, Chunk c, boolean foreground) {

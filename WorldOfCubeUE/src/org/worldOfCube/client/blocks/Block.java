@@ -297,29 +297,29 @@ public abstract class Block {
 			if (right) {
 				if (top) {
 					if (bottom) {
-						return ResLoader.FILLED;
+						return (byte) ResLoader.TileTypes.FILLED.ordinal();
 					} else {
-						return ResLoader.BORDER_BOTTOM;
+						return (byte) ResLoader.TileTypes.BORDER_BOTTOM.ordinal();
 					}
 				} else {
 					if (bottom) {
-						return ResLoader.BORDER_TOP;
+						return (byte) ResLoader.TileTypes.BORDER_TOP.ordinal();
 					} else {
-						return ResLoader.HPIPE;
+						return (byte) ResLoader.TileTypes.HPIPE.ordinal();
 					}
 				}
 			} else {
 				if (top) {
 					if (bottom) {
-						return ResLoader.BORDER_RIGHT;
+						return (byte) ResLoader.TileTypes.BORDER_RIGHT.ordinal();
 					} else {
-						return ResLoader.CORNER_BOTTOMRIGHT;
+						return (byte) ResLoader.TileTypes.CORNER_BOTTOMRIGHT.ordinal();
 					}
 				} else {
 					if (bottom) {
-						return ResLoader.CORNER_TOPRIGHT;
+						return (byte) ResLoader.TileTypes.CORNER_TOPRIGHT.ordinal();
 					} else {
-						return ResLoader.RIGHT;
+						return (byte) ResLoader.TileTypes.RIGHT.ordinal();
 					}
 				}
 			}
@@ -327,29 +327,29 @@ public abstract class Block {
 			if (right) {
 				if (top) {
 					if (bottom) {
-						return ResLoader.BORDER_LEFT;
+						return (byte) ResLoader.TileTypes.BORDER_LEFT.ordinal();
 					} else {
-						return ResLoader.CORNER_BOTTOMLEFT;
+						return (byte) ResLoader.TileTypes.CORNER_BOTTOMLEFT.ordinal();
 					}
 				} else {
 					if (bottom) {
-						return ResLoader.CORNER_TOPLEFT;
+						return (byte) ResLoader.TileTypes.CORNER_TOPLEFT.ordinal();
 					} else {
-						return ResLoader.LEFT;
+						return (byte) ResLoader.TileTypes.LEFT.ordinal();
 					}
 				}
 			} else {
 				if (top) {
 					if (bottom) {
-						return ResLoader.VPIPE;
+						return (byte) ResLoader.TileTypes.VPIPE.ordinal();
 					} else {
-						return ResLoader.BOTTOM;
+						return (byte) ResLoader.TileTypes.BOTTOM.ordinal();
 					}
 				} else {
 					if (bottom) {
-						return ResLoader.TOP;
+						return (byte) ResLoader.TileTypes.TOP.ordinal();
 					} else {
-						return ResLoader.ALONE;
+						return (byte) ResLoader.TileTypes.ALONE.ordinal();
 					}
 				}
 			}

@@ -49,7 +49,7 @@ public class BoxOnOff extends BoxLabel {
 	private boolean on;
 
 	public BoxOnOff(String on, String off, boolean isOn) {
-		super(0, 0, 1, 1, isOn ? on : off, ResLoader.GUI_BORDER_NORMAL);
+		super(0, 0, 1, 1, isOn ? on : off, ResLoader.Sheets.GUI_BORDER_NORMAL.ordinal());
 		this.onString = on;
 		this.offString = off;
 		this.on = isOn;

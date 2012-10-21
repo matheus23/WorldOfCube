@@ -61,7 +61,7 @@ public class ScreenWorlds extends Screen implements BoxLabelListener {
 		Log.out("Found " + worlds.length + " worlds.");
 		buttonWorlds = new BoxLabel[worlds.length];
 		for (int i = 0; i < worlds.length; i++) {
-			buttonWorlds[i] = new BoxLabel(worlds[i].getName(), ResLoader.GUI_BORDER_NORMAL, this);
+			buttonWorlds[i] = new BoxLabel(worlds[i].getName(), ResLoader.Sheets.GUI_BORDER_NORMAL.ordinal(), this);
 			scrollPanel.addElement(buttonWorlds[i]);
 		}
 

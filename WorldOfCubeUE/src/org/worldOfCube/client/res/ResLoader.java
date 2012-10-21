@@ -61,77 +61,85 @@ public final class ResLoader {
 	/*
 	 * SpriteSheet ID's:
 	 */
-	public static final int BLOCK_EARTH = 		0;
-	public static final int BLOCK_GRASS = 		1;
-	public static final int BLOCK_ROCK = 		2;
-	public static final int BLOCK_LIGHTSTONE = 	3;
-	public static final int BLOCK_TREEWOOD = 	4;
-	public static final int BLOCK_LEAVES = 		5;
-	public static final int BLOCK_WOOD = 		6;
-
-	public static final int GUI_BORDER_BLUE = 	32;
-	public static final int GUI_BORDER_NORMAL = 33;
-
-	public static final int GUI_LOADBAR = 		34;
-
-	public static final int GUI_INV_SLOT = 		40;
-
-	public static final int PLAYER_SHEET = 		48;
+	public static enum Sheets {
+		BLOCKS,
+		GUI_BORDER_BLUE,
+		GUI_BORDER_NORMAL,
+		GUI_LOADBAR,
+		GUI_INV_SLOT,
+		PLAYER_SHEET;
+	}
 
 	/*
 	 * Sprite ID's:
 	 */
-	public static final int GUI_BORDER_TL = 0;
-	public static final int GUI_BORDER_T = 1;
-	public static final int GUI_BORDER_TR = 2;
-	public static final int GUI_BORDER_L = 3;
-	public static final int GUI_MID = 4;
-	public static final int GUI_BORDER_R = 5;
-	public static final int GUI_BORDER_BL = 6;
-	public static final int GUI_BORDER_B = 7;
-	public static final int GUI_BORDER_BR = 8;
+	public static final int BORDER_SIZE = 16;
+	public static enum Borders {
+		GUI_BORDER_TL,
+		GUI_BORDER_T,
+		GUI_BORDER_TR,
+		GUI_BORDER_L,
+		GUI_MID,
+		GUI_BORDER_R,
+		GUI_BORDER_BL,
+		GUI_BORDER_B,
+		GUI_BORDER_BR;
+	}
 
-	public static final int GUI_BORDER_S = 16;
+	public static final int INV_SLOT_SIZE = 32;
+	public static enum Slots {
+		UNSELECTED,
+		SELECTED;
+	}
 
-	public static final int GUI_INV_SLOT_UNSEL = 0;
-	public static final int GUI_INV_SLOT_SEL = 1;
+	public static enum Loadbars {
+		LEFT,
+		RIGHT,
+		MID;
+	}
 
-	public static final int GUI_INV_SLOT_SIZE = 32;
+	public static enum PlayerParts {
+		ARM,
+		HEAD,
+		BODY,
+		LEG_FRONT,
+		LEG_BACK,
+		HEAD_MINI;
+	}
 
-	public static final int GUI_LOADBAR_LEFT = 0;
-	public static final int GUI_LOADBAR_RIGHT = 1;
-	public static final int GUI_LOADBAR_MID = 2;
+	public static enum TileTypes {
+		ALONE,
+		TOP,
+		BOTTOM,
+		LEFT,
+		RIGHT,
+		HPIPE,
+		VPIPE,
+		CORNER_TOPLEFT,
+		CORNER_TOPRIGHT,
+		CORNER_BOTTOMRIGHT,
+		CORNER_BOTTOMLEFT,
+		BORDER_TOP,
+		BORDER_BOTTOM,
+		BORDER_LEFT,
+		BORDER_RIGHT,
+		FILLED;
+	}
 
-	public static final int ARM = 0;
-	public static final int HEAD = 1;
-	public static final int BODY = 2;
-	public static final int LEG_FRONT = 3;
-	public static final int LEG_BACK = 4;
-	public static final int HEAD_MINI = 5;
-
+	public static final int BLOCK_PART_SIZE = 64;
 	public static final int BLOCK_SIZE = 16;
+	public static enum Blocks {
+		EARTH,
+		GRASS,
+		LEAVES,
+		LIGHTSTONE,
+		ROCK,
+		TREEWOOD,
+		WOOD;
+	}
 
-	public static final byte ALONE = 0;
-	public static final byte TOP = 1;
-	public static final byte BOTTOM = 2;
-	public static final byte LEFT = 3;
-	public static final byte RIGHT = 4;
-	public static final byte HPIPE = 5;
-	public static final byte VPIPE = 6;
-	public static final byte CORNER_TOPLEFT = 7;
-	public static final byte CORNER_TOPRIGHT = 8;
-	public static final byte CORNER_BOTTOMRIGHT = 9;
-	public static final byte CORNER_BOTTOMLEFT = 10;
-	public static final byte BORDER_TOP = 11;
-	public static final byte BORDER_BOTTOM = 12;
-	public static final byte BORDER_LEFT = 13;
-	public static final byte BORDER_RIGHT = 14;
-	public static final byte FILLED = 15;
-
-	public static final int NUM_BLOCK_TYPES = 16;
-
-	private static SpriteSheet[] sheets = new SpriteSheet[64];
-	private static BlockVAO[] blocks = new BlockVAO[NUM_BLOCK_TYPES];
+	private static SpriteSheet[] sheets = new SpriteSheet[Sheets.values().length];
+	private static BlockVAO[] blocks = new BlockVAO[Blocks.values().length];
 
 	public static UniTexture guiBackground;
 	// Titlescreen-Background
@@ -141,37 +149,25 @@ public final class ResLoader {
 	public static void load() {
 		Log.out("Using texture rect = " + StateManager.isUsingTexRect());
 		UniTextureLoader.flipImages = false;
-		//TODO: Blocks: Add to sheets, give sprites.
-		sheets[BLOCK_EARTH     ] = new SpriteSheet(res + "blocks/blocksEarth.png",      NUM_BLOCK_TYPES, StateManager.isUsingTexRect());
-		sheets[BLOCK_GRASS     ] = new SpriteSheet(res + "blocks/blocksGrass.png",      NUM_BLOCK_TYPES, StateManager.isUsingTexRect());
-		sheets[BLOCK_ROCK      ] = new SpriteSheet(res + "blocks/blocksRock.png",       NUM_BLOCK_TYPES, StateManager.isUsingTexRect());
-		sheets[BLOCK_LIGHTSTONE] = new SpriteSheet(res + "blocks/blocksLightstone.png", NUM_BLOCK_TYPES, StateManager.isUsingTexRect());
-		sheets[BLOCK_TREEWOOD  ] = new SpriteSheet(res + "blocks/blocksTreewood.png", 	NUM_BLOCK_TYPES, StateManager.isUsingTexRect());
-		sheets[BLOCK_LEAVES    ] = new SpriteSheet(res + "blocks/blocksLeaves.png",     NUM_BLOCK_TYPES, StateManager.isUsingTexRect());
-		sheets[BLOCK_WOOD      ] = new SpriteSheet(res + "blocks/blocksWood.png", 		NUM_BLOCK_TYPES, StateManager.isUsingTexRect());
-		splitUp(sheets[BLOCK_EARTH     ]);
-		splitUp(sheets[BLOCK_GRASS     ]);
-		splitUp(sheets[BLOCK_ROCK      ]);
-		splitUp(sheets[BLOCK_LIGHTSTONE]);
-		splitUp(sheets[BLOCK_TREEWOOD  ]);
-		splitUp(sheets[BLOCK_LEAVES    ]);
-		splitUp(sheets[BLOCK_WOOD      ]);
+		//TODO: Blocks: Add to sheet, give sprites.
+		sheets[Sheets.BLOCKS.ordinal()] = new SpriteSheet(res + "blocks/blocks.png", Blocks.values().length * TileTypes.values().length, StateManager.isUsingTexRect());
+		splitUpBlocks(sheets[Sheets.BLOCKS.ordinal()]);
 
 		loadBlockRenderers();
 
-		sheets[PLAYER_SHEET] = new SpriteSheet(res + "sprites/player/mike_ripped.png", 6, StateManager.isUsingTexRect());
-		splitPlayerSprite(sheets[PLAYER_SHEET]);
+		sheets[Sheets.PLAYER_SHEET.ordinal()] = new SpriteSheet(res + "sprites/player/mike_ripped.png", PlayerParts.values().length, StateManager.isUsingTexRect());
+		splitPlayerSprite(sheets[Sheets.PLAYER_SHEET.ordinal()]);
 
-		sheets[GUI_BORDER_BLUE] = new SpriteSheet(res + "gui/border_blue.png", 9, StateManager.isUsingTexRect());
-		sheets[GUI_BORDER_NORMAL] = new SpriteSheet(res + "gui/border_normal.png", 9, StateManager.isUsingTexRect());
-		splitUpGUIBorder(sheets[GUI_BORDER_BLUE]);
-		splitUpGUIBorder(sheets[GUI_BORDER_NORMAL]);
+		sheets[Sheets.GUI_BORDER_BLUE.ordinal()] = new SpriteSheet(res + "gui/border_blue.png", 9, StateManager.isUsingTexRect());
+		sheets[Sheets.GUI_BORDER_NORMAL.ordinal()] = new SpriteSheet(res + "gui/border_normal.png", 9, StateManager.isUsingTexRect());
+		splitUpGUIBorder(sheets[Sheets.GUI_BORDER_BLUE.ordinal()]);
+		splitUpGUIBorder(sheets[Sheets.GUI_BORDER_NORMAL.ordinal()]);
 
-		sheets[GUI_LOADBAR] = new SpriteSheet(res + "gui/loadbar.png", 3, StateManager.isUsingTexRect());
-		splitUpGUILoadBar(sheets[GUI_LOADBAR]);
+		sheets[Sheets.GUI_LOADBAR.ordinal()] = new SpriteSheet(res + "gui/loadbar.png", 3, StateManager.isUsingTexRect());
+		splitUpGUILoadBar(sheets[Sheets.GUI_LOADBAR.ordinal()]);
 
-		sheets[GUI_INV_SLOT] = new SpriteSheet(res + "gui/inv_tile.png", 2, StateManager.isUsingTexRect());
-		splitUpGUIInvSlots(sheets[GUI_INV_SLOT]);
+		sheets[Sheets.GUI_INV_SLOT.ordinal()] = new SpriteSheet(res + "gui/inv_tile.png", 2, StateManager.isUsingTexRect());
+		splitUpGUIInvSlots(sheets[Sheets.GUI_INV_SLOT.ordinal()]);
 
 		glEnable(GL_TEXTURE_2D);
 		String loadpath = res + "gui/backgroundtile.png";
@@ -218,60 +214,82 @@ public final class ResLoader {
 	}
 
 	private static void splitPlayerSprite(SpriteSheet sheet) {
-		sheet.giveSprite(ARM, 			 0,  0,  7, 13);
-		sheet.giveSprite(HEAD, 			 7,  0, 26, 29);
-		sheet.giveSprite(BODY, 			33,  0, 14, 19);
-		sheet.giveSprite(LEG_FRONT, 	47,  0,  9, 13);
-		sheet.giveSprite(LEG_BACK, 		47, 13,  9, 13);
-		sheet.giveSprite(HEAD_MINI, 	33, 19, 15, 15);
+		sheet.giveSprite(PlayerParts.ARM.ordinal(), 		 0,  0,  7, 13);
+		sheet.giveSprite(PlayerParts.HEAD.ordinal(), 		 7,  0, 26, 29);
+		sheet.giveSprite(PlayerParts.BODY.ordinal(), 		33,  0, 14, 19);
+		sheet.giveSprite(PlayerParts.LEG_FRONT.ordinal(), 	47,  0,  9, 13);
+		sheet.giveSprite(PlayerParts.LEG_BACK.ordinal(), 	47, 13,  9, 13);
+		sheet.giveSprite(PlayerParts.HEAD_MINI.ordinal(), 	33, 19, 15, 15);
 	}
 
-	private static void splitUp(SpriteSheet sheet) {
-		sheet.giveSprite(ALONE				,  0f,  0f, BLOCK_SIZE, BLOCK_SIZE);
-		sheet.giveSprite(CORNER_TOPLEFT		, 16f,  0f, BLOCK_SIZE, BLOCK_SIZE);
-		sheet.giveSprite(BORDER_TOP			, 32f,  0f, BLOCK_SIZE, BLOCK_SIZE);
-		sheet.giveSprite(CORNER_TOPRIGHT	, 48f,  0f, BLOCK_SIZE, BLOCK_SIZE);
-		sheet.giveSprite(TOP				,  0f, 16f, BLOCK_SIZE, BLOCK_SIZE);
-		sheet.giveSprite(BORDER_LEFT		, 16f, 16f, BLOCK_SIZE, BLOCK_SIZE);
-		sheet.giveSprite(FILLED				, 32f, 16f, BLOCK_SIZE, BLOCK_SIZE);
-		sheet.giveSprite(BORDER_RIGHT		, 48f, 16f, BLOCK_SIZE, BLOCK_SIZE);
-		sheet.giveSprite(BOTTOM				,  0f, 32f, BLOCK_SIZE, BLOCK_SIZE);
-		sheet.giveSprite(CORNER_BOTTOMLEFT	, 16f, 32f, BLOCK_SIZE, BLOCK_SIZE);
-		sheet.giveSprite(BORDER_BOTTOM		, 32f, 32f, BLOCK_SIZE, BLOCK_SIZE);
-		sheet.giveSprite(CORNER_BOTTOMRIGHT	, 48f, 32f, BLOCK_SIZE, BLOCK_SIZE);
-		sheet.giveSprite(LEFT				,  0f, 48f, BLOCK_SIZE, BLOCK_SIZE);
-		sheet.giveSprite(RIGHT				, 16f, 48f, BLOCK_SIZE, BLOCK_SIZE);
-		sheet.giveSprite(VPIPE				, 32f, 48f, BLOCK_SIZE, BLOCK_SIZE);
-		sheet.giveSprite(HPIPE				, 48f, 48f, BLOCK_SIZE, BLOCK_SIZE);
+	private static void splitUpBlocks(SpriteSheet sheet) {
+		splitUpBlocksOffset(sheet, Blocks.EARTH,		 0, 0);
+		splitUpBlocksOffset(sheet, Blocks.GRASS,		 1, 0);
+		splitUpBlocksOffset(sheet, Blocks.ROCK,			 2, 0);
+		splitUpBlocksOffset(sheet, Blocks.TREEWOOD,		 3, 0);
+		splitUpBlocksOffset(sheet, Blocks.WOOD,			 4, 0);
+		splitUpBlocksOffset(sheet, Blocks.LEAVES,		 5, 0);
+		splitUpBlocksOffset(sheet, Blocks.LIGHTSTONE,	 6, 0);
+	}
+
+	private static void splitUpBlocksOffset(SpriteSheet sheet, Blocks block, int xPos, int yPos) {
+		splitUp(sheet, block, xPos * BLOCK_PART_SIZE, yPos * BLOCK_PART_SIZE);
+	}
+
+	private static void splitUp(SpriteSheet sheet, Blocks block, float xoff, float yoff) {
+		sheet.giveSprite(getIndex(block, TileTypes.ALONE),				  0 + xoff,  0 + yoff, BLOCK_SIZE, BLOCK_SIZE);
+		sheet.giveSprite(getIndex(block, TileTypes.CORNER_TOPLEFT),		 16 + xoff,  0 + yoff, BLOCK_SIZE, BLOCK_SIZE);
+		sheet.giveSprite(getIndex(block, TileTypes.BORDER_TOP),			 32 + xoff,  0 + yoff, BLOCK_SIZE, BLOCK_SIZE);
+		sheet.giveSprite(getIndex(block, TileTypes.CORNER_TOPRIGHT),	 48 + xoff,  0 + yoff, BLOCK_SIZE, BLOCK_SIZE);
+		sheet.giveSprite(getIndex(block, TileTypes.TOP),				  0 + xoff, 16 + yoff, BLOCK_SIZE, BLOCK_SIZE);
+		sheet.giveSprite(getIndex(block, TileTypes.BORDER_LEFT),		 16 + xoff, 16 + yoff, BLOCK_SIZE, BLOCK_SIZE);
+		sheet.giveSprite(getIndex(block, TileTypes.FILLED),				 32 + xoff, 16 + yoff, BLOCK_SIZE, BLOCK_SIZE);
+		sheet.giveSprite(getIndex(block, TileTypes.BORDER_RIGHT),		 48 + xoff, 16 + yoff, BLOCK_SIZE, BLOCK_SIZE);
+		sheet.giveSprite(getIndex(block, TileTypes.BOTTOM),				  0 + xoff, 32 + yoff, BLOCK_SIZE, BLOCK_SIZE);
+		sheet.giveSprite(getIndex(block, TileTypes.CORNER_BOTTOMLEFT),	 16 + xoff, 32 + yoff, BLOCK_SIZE, BLOCK_SIZE);
+		sheet.giveSprite(getIndex(block, TileTypes.BORDER_BOTTOM),		 32 + xoff, 32 + yoff, BLOCK_SIZE, BLOCK_SIZE);
+		sheet.giveSprite(getIndex(block, TileTypes.CORNER_BOTTOMRIGHT),  48 + xoff, 32 + yoff, BLOCK_SIZE, BLOCK_SIZE);
+		sheet.giveSprite(getIndex(block, TileTypes.LEFT),				  0 + xoff, 48 + yoff, BLOCK_SIZE, BLOCK_SIZE);
+		sheet.giveSprite(getIndex(block, TileTypes.RIGHT),				 16 + xoff, 48 + yoff, BLOCK_SIZE, BLOCK_SIZE);
+		sheet.giveSprite(getIndex(block, TileTypes.VPIPE),				 32 + xoff, 48 + yoff, BLOCK_SIZE, BLOCK_SIZE);
+		sheet.giveSprite(getIndex(block, TileTypes.HPIPE),				 48 + xoff, 48 + yoff, BLOCK_SIZE, BLOCK_SIZE);
+	}
+
+	public static int getIndex(Blocks block, TileTypes type) {
+		return getIndex(block, type.ordinal());
+	}
+
+	public static int getIndex(Blocks block, int borderID) {
+		return (block.ordinal() * TileTypes.values().length) + borderID;
 	}
 
 	private static void loadBlockRenderers() {
-		for (int i = 0; i < NUM_BLOCK_TYPES; i++) {
+		for (int i = 0; i < Blocks.values().length; i++) {
 			blocks[i] = new BlockVAO(i);
 		}
 	}
 
 	private static void splitUpGUIBorder(SpriteSheet sheet) {
-		sheet.giveSprite(GUI_BORDER_TL,	 0,  0,  GUI_BORDER_S, GUI_BORDER_S);
-		sheet.giveSprite(GUI_BORDER_T,	16,  0,  GUI_BORDER_S, GUI_BORDER_S);
-		sheet.giveSprite(GUI_BORDER_TR,	32,  0,  GUI_BORDER_S, GUI_BORDER_S);
-		sheet.giveSprite(GUI_BORDER_L,	 0,  16, GUI_BORDER_S, GUI_BORDER_S);
-		sheet.giveSprite(GUI_MID,		16,  16, GUI_BORDER_S, GUI_BORDER_S);
-		sheet.giveSprite(GUI_BORDER_R,	32,  16, GUI_BORDER_S, GUI_BORDER_S);
-		sheet.giveSprite(GUI_BORDER_BL,	 0,  32, GUI_BORDER_S, GUI_BORDER_S);
-		sheet.giveSprite(GUI_BORDER_B,	16,  32, GUI_BORDER_S, GUI_BORDER_S);
-		sheet.giveSprite(GUI_BORDER_BR,	32,  32, GUI_BORDER_S, GUI_BORDER_S);
+		sheet.giveSprite(Borders.GUI_BORDER_TL.ordinal(),	 0,  0,  BORDER_SIZE, BORDER_SIZE);
+		sheet.giveSprite(Borders.GUI_BORDER_T.ordinal(),	16,  0,  BORDER_SIZE, BORDER_SIZE);
+		sheet.giveSprite(Borders.GUI_BORDER_TR.ordinal(),	32,  0,  BORDER_SIZE, BORDER_SIZE);
+		sheet.giveSprite(Borders.GUI_BORDER_L.ordinal(),	 0,  16, BORDER_SIZE, BORDER_SIZE);
+		sheet.giveSprite(Borders.GUI_MID.ordinal(),			16,  16, BORDER_SIZE, BORDER_SIZE);
+		sheet.giveSprite(Borders.GUI_BORDER_R.ordinal(),	32,  16, BORDER_SIZE, BORDER_SIZE);
+		sheet.giveSprite(Borders.GUI_BORDER_BL.ordinal(),	 0,  32, BORDER_SIZE, BORDER_SIZE);
+		sheet.giveSprite(Borders.GUI_BORDER_B.ordinal(),	16,  32, BORDER_SIZE, BORDER_SIZE);
+		sheet.giveSprite(Borders.GUI_BORDER_BR.ordinal(),	32,  32, BORDER_SIZE, BORDER_SIZE);
 	}
 
 	private static void splitUpGUIInvSlots(SpriteSheet sheet) {
-		sheet.giveSprite(GUI_INV_SLOT_UNSEL, 0, 0, GUI_INV_SLOT_SIZE, GUI_INV_SLOT_SIZE);
-		sheet.giveSprite(GUI_INV_SLOT_SEL, 0, GUI_INV_SLOT_SIZE, GUI_INV_SLOT_SIZE, GUI_INV_SLOT_SIZE);
+		sheet.giveSprite(Slots.UNSELECTED.ordinal(), 0, 0, INV_SLOT_SIZE, INV_SLOT_SIZE);
+		sheet.giveSprite(Slots.SELECTED.ordinal(), 0, INV_SLOT_SIZE, INV_SLOT_SIZE, INV_SLOT_SIZE);
 	}
 
 	private static void splitUpGUILoadBar(SpriteSheet sheet) {
-		sheet.giveSprite(GUI_LOADBAR_LEFT, 0, 0, 4, 8);
-		sheet.giveSprite(GUI_LOADBAR_MID, 4, 0, 8, 8);
-		sheet.giveSprite(GUI_LOADBAR_RIGHT, 12, 0, 4, 8);
+		sheet.giveSprite(Loadbars.LEFT.ordinal(), 0, 0, 4, 8);
+		sheet.giveSprite(Loadbars.MID.ordinal(), 4, 0, 8, 8);
+		sheet.giveSprite(Loadbars.RIGHT.ordinal(), 12, 0, 4, 8);
 	}
 
 	public static UniTexture loadTex(String loadpath, boolean texRect) {
@@ -308,8 +326,24 @@ public final class ResLoader {
 		return sheets[spritesheet].getSprite(sprite);
 	}
 
+	public static Sprite get(Blocks block, TileTypes type) {
+		return sheets[Sheets.BLOCKS.ordinal()].getSprite(getIndex(block, type));
+	}
+
+	public static Sprite get(Blocks block, int borderID) {
+		return sheets[Sheets.BLOCKS.ordinal()].getSprite(getIndex(block, borderID));
+	}
+
+	public static Sprite get(Sheets sheet, int sprite) {
+		return sheets[sheet.ordinal()].getSprite(sprite);
+	}
+
 	public static BlockVAO getBlockRenderer(int borderID) {
 		return blocks[borderID];
+	}
+
+	public static SpriteSheet getSheet(Sheets sheet) {
+		return sheets[sheet.ordinal()];
 	}
 
 	public static BufferedImage loadBufferedImage(String path) {

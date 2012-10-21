@@ -51,10 +51,10 @@ public class BlockVAO {
 
 		tex = BufferUtils.createFloatBuffer(8);
 		tex.order();
-		tex.put(ResLoader.get(ResLoader.BLOCK_EARTH, borderID).getCoord(0, true)).put(ResLoader.get(ResLoader.BLOCK_EARTH, borderID).getCoord(0, false));
-		tex.put(ResLoader.get(ResLoader.BLOCK_EARTH, borderID).getCoord(1, true)).put(ResLoader.get(ResLoader.BLOCK_EARTH, borderID).getCoord(1, false));
-		tex.put(ResLoader.get(ResLoader.BLOCK_EARTH, borderID).getCoord(2, true)).put(ResLoader.get(ResLoader.BLOCK_EARTH, borderID).getCoord(2, false));
-		tex.put(ResLoader.get(ResLoader.BLOCK_EARTH, borderID).getCoord(3, true)).put(ResLoader.get(ResLoader.BLOCK_EARTH, borderID).getCoord(3, false));
+		tex.put(ResLoader.get(ResLoader.Blocks.EARTH, borderID).getCoord(0, true)).put(ResLoader.get(ResLoader.Blocks.EARTH, borderID).getCoord(0, false));
+		tex.put(ResLoader.get(ResLoader.Blocks.EARTH, borderID).getCoord(1, true)).put(ResLoader.get(ResLoader.Blocks.EARTH, borderID).getCoord(1, false));
+		tex.put(ResLoader.get(ResLoader.Blocks.EARTH, borderID).getCoord(2, true)).put(ResLoader.get(ResLoader.Blocks.EARTH, borderID).getCoord(2, false));
+		tex.put(ResLoader.get(ResLoader.Blocks.EARTH, borderID).getCoord(3, true)).put(ResLoader.get(ResLoader.Blocks.EARTH, borderID).getCoord(3, false));
 		tex.flip();
 
 		col = BufferUtils.createFloatBuffer(12);

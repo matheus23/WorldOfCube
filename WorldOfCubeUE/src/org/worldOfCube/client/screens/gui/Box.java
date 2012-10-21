@@ -46,7 +46,7 @@ public class Box implements GUIElement {
 	public static final float COLOR_S_HOVER = 0.3f;
 	public static final float COLOR_S_CLICKED = 0.5f;
 
-	private static final int SIZE = ResLoader.GUI_BORDER_S;
+	private static final int SIZE = ResLoader.BORDER_SIZE;
 	private static final int HSIZE = SIZE/2;
 
 	private Rectangle rect = new Rectangle();
@@ -79,35 +79,35 @@ public class Box implements GUIElement {
 	}
 
 	private Sprite getTopLeft() {
-		return ResLoader.get(borderSpriteSheet, ResLoader.GUI_BORDER_TL);
+		return ResLoader.get(borderSpriteSheet, ResLoader.Borders.GUI_BORDER_TL.ordinal());
 	}
 
 	private Sprite getTopRight() {
-		return ResLoader.get(borderSpriteSheet, ResLoader.GUI_BORDER_TR);
+		return ResLoader.get(borderSpriteSheet, ResLoader.Borders.GUI_BORDER_TR.ordinal());
 	}
 
 	private Sprite getBotLeft() {
-		return ResLoader.get(borderSpriteSheet, ResLoader.GUI_BORDER_BL);
+		return ResLoader.get(borderSpriteSheet, ResLoader.Borders.GUI_BORDER_BL.ordinal());
 	}
 
 	private Sprite getBotRight() {
-		return ResLoader.get(borderSpriteSheet, ResLoader.GUI_BORDER_BR);
+		return ResLoader.get(borderSpriteSheet, ResLoader.Borders.GUI_BORDER_BR.ordinal());
 	}
 
 	private Sprite getTop() {
-		return ResLoader.get(borderSpriteSheet, ResLoader.GUI_BORDER_T);
+		return ResLoader.get(borderSpriteSheet, ResLoader.Borders.GUI_BORDER_T.ordinal());
 	}
 
 	private Sprite getBot() {
-		return ResLoader.get(borderSpriteSheet, ResLoader.GUI_BORDER_B);
+		return ResLoader.get(borderSpriteSheet, ResLoader.Borders.GUI_BORDER_B.ordinal());
 	}
 
 	private Sprite getLeft() {
-		return ResLoader.get(borderSpriteSheet, ResLoader.GUI_BORDER_L);
+		return ResLoader.get(borderSpriteSheet, ResLoader.Borders.GUI_BORDER_L.ordinal());
 	}
 
 	private Sprite getRight() {
-		return ResLoader.get(borderSpriteSheet, ResLoader.GUI_BORDER_R);
+		return ResLoader.get(borderSpriteSheet, ResLoader.Borders.GUI_BORDER_R.ordinal());
 	}
 
 	public void setState(byte state) {

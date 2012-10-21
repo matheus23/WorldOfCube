@@ -52,7 +52,7 @@ public class BoxInputLabel implements GUIElement, InputListener {
 	private boolean showInfo;
 
 	public BoxInputLabel(int fontalign, int maxchars, BoxInputLabelListener bill) {
-		this(0, 0, 1, 1, 20, ResLoader.GUI_BORDER_NORMAL, fontalign, maxchars, bill);
+		this(0, 0, 1, 1, 20, ResLoader.Sheets.GUI_BORDER_NORMAL.ordinal(), fontalign, maxchars, bill);
 	}
 
 	public BoxInputLabel(int x, int y, int width, int height, int size, int borderID, int fontalign, int maxchars, BoxInputLabelListener bill) {
@@ -153,7 +153,7 @@ public class BoxInputLabel implements GUIElement, InputListener {
 					w += 10;
 				}
 			}
-			Box b = new Box(x-10, y-10, endw+20, h+20, ResLoader.GUI_BORDER_NORMAL);
+			Box b = new Box(x-10, y-10, endw+20, h+20, ResLoader.Sheets.GUI_BORDER_NORMAL.ordinal());
 			b.render();
 			GLFont.render(x, y, GLFont.ALIGN_LEFT, infoText, 10);
 		}

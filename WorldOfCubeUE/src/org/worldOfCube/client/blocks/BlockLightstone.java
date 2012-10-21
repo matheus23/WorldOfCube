@@ -27,10 +27,11 @@ import org.worldOfCube.client.logic.chunks.Chunk;
 import org.worldOfCube.client.logic.chunks.light.LightSource;
 import org.worldOfCube.client.logic.chunks.light.RenderedLight;
 import org.worldOfCube.client.res.ResLoader;
+import org.worldOfCube.client.res.ResLoader.Blocks;
 
 public class BlockLightstone extends Block implements LightSource {
 
-	private static final int BLOCK_TEX = ResLoader.BLOCK_LIGHTSTONE;
+	private static final Blocks BLOCK_TEX = ResLoader.Blocks.LIGHTSTONE;
 	private static final Color awtCol = new Color(1f, 1f, 0.5f);
 	public static final RenderedLight light = new RenderedLight(16, 1f);
 
@@ -87,7 +88,7 @@ public class BlockLightstone extends Block implements LightSource {
 
 	@Override
 	public boolean containsAlpha() {
-		return borderID != ResLoader.FILLED;
+		return borderID != ResLoader.TileTypes.FILLED.ordinal();
 	}
 
 	@Override

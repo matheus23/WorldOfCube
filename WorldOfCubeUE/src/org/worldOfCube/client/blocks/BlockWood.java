@@ -25,10 +25,11 @@ import java.awt.Color;
 
 import org.worldOfCube.client.logic.chunks.Chunk;
 import org.worldOfCube.client.res.ResLoader;
+import org.worldOfCube.client.res.ResLoader.Blocks;
 
 public class BlockWood extends Block {
 
-	public static final int BLOCK_TEX = ResLoader.BLOCK_WOOD;
+	public static final Blocks BLOCK_TEX = ResLoader.Blocks.WOOD;
 	private static final Color awtCol = new Color(0xa9885e);
 
 	public BlockWood(byte x, byte y, Chunk c, boolean foreground) {

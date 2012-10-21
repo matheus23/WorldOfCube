@@ -48,7 +48,7 @@ public class BoxOptionCycle extends BoxLabel {
 	private int current;
 
 	public BoxOptionCycle(int selected, String... options) {
-		super(0, 0, 1, 1, options[selected], ResLoader.GUI_BORDER_NORMAL);
+		super(0, 0, 1, 1, options[selected], ResLoader.Sheets.GUI_BORDER_NORMAL.ordinal());
 		this.current = selected;
 		this.options = options;
 		addBoxLabelListener(new CycleListener(this));

@@ -27,9 +27,9 @@ import org.worldOfCube.client.util.StateManager;
 
 public class SpriteSheet {
 
-	private UniTexture tex;
-	private Sprite[] sprites;
-	private boolean texRect;
+	protected final UniTexture tex;
+	protected final Sprite[] sprites;
+	protected final boolean texRect;
 
 	public SpriteSheet(String loadpath, int size, boolean texRect) {
 		this.texRect = texRect;
@@ -45,6 +45,7 @@ public class SpriteSheet {
 	public SpriteSheet(UniTexture tex, int size) {
 		this.tex = tex;
 		sprites = new Sprite[size];
+		texRect = false;
 	}
 
 	public void bind() {
@@ -80,6 +81,10 @@ public class SpriteSheet {
 
 	public void delete() {
 		tex.delete();
+	}
+
+	public int getSpriteNum() {
+		return sprites.length;
 	}
 
 }

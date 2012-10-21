@@ -143,13 +143,13 @@ public final class BlockID {
 	 */
 	public static Sprite itemToSprite(int id) {
 		switch(id) {
-		case Item.EARTH: return ResLoader.get(ResLoader.BLOCK_EARTH, ResLoader.ALONE);
-		case Item.GRASS: return ResLoader.get(ResLoader.BLOCK_GRASS, ResLoader.ALONE);
-		case Item.ROCK: return ResLoader.get(ResLoader.BLOCK_ROCK, ResLoader.ALONE);
-		case Item.LIGHTSTONE:return ResLoader.get(ResLoader.BLOCK_LIGHTSTONE, ResLoader.ALONE);
-		case Item.TREEWOOD: return ResLoader.get(ResLoader.BLOCK_TREEWOOD, ResLoader.ALONE);
-		case Item.LEAVES: return ResLoader.get(ResLoader.BLOCK_LEAVES, ResLoader.ALONE);
-		case Item.WOOD: return ResLoader.get(ResLoader.BLOCK_WOOD, ResLoader.ALONE);
+		case Item.EARTH: return ResLoader.get(ResLoader.Blocks.EARTH, ResLoader.TileTypes.ALONE);
+		case Item.GRASS: return ResLoader.get(ResLoader.Blocks.GRASS, ResLoader.TileTypes.ALONE);
+		case Item.ROCK: return ResLoader.get(ResLoader.Blocks.ROCK, ResLoader.TileTypes.ALONE);
+		case Item.LIGHTSTONE:return ResLoader.get(ResLoader.Blocks.LIGHTSTONE, ResLoader.TileTypes.ALONE);
+		case Item.TREEWOOD: return ResLoader.get(ResLoader.Blocks.TREEWOOD, ResLoader.TileTypes.ALONE);
+		case Item.LEAVES: return ResLoader.get(ResLoader.Blocks.LEAVES, ResLoader.TileTypes.ALONE);
+		case Item.WOOD: return ResLoader.get(ResLoader.Blocks.WOOD, ResLoader.TileTypes.ALONE);
 		default: throw new IllegalArgumentException("Invalid Item ID: " + id);
 		}
 	}

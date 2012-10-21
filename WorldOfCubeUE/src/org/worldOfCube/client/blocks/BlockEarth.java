@@ -25,10 +25,11 @@ import java.awt.Color;
 
 import org.worldOfCube.client.logic.chunks.Chunk;
 import org.worldOfCube.client.res.ResLoader;
+import org.worldOfCube.client.res.ResLoader.Blocks;
 
 public class BlockEarth extends Block {
 
-	public static final int BLOCK_TEX = ResLoader.BLOCK_EARTH;
+	public static final Blocks BLOCK_TEX = ResLoader.Blocks.EARTH;
 
 	private static final Color awtCol = new Color(0xac7754);
 
@@ -42,7 +43,7 @@ public class BlockEarth extends Block {
 
 	@Override
 	public void init() {
-		if (borderID != ResLoader.FILLED) {
+		if (borderID != ResLoader.TileTypes.FILLED.ordinal()) {
 			replaceWithGrass();
 		}
 	}
@@ -50,7 +51,7 @@ public class BlockEarth extends Block {
 	@Override
 	public void update() {
 		super.update();
-		if (borderID != ResLoader.FILLED) {
+		if (borderID != ResLoader.TileTypes.FILLED.ordinal()) {
 			replaceWithGrass();
 		}
 	}
@@ -80,7 +81,7 @@ public class BlockEarth extends Block {
 
 	@Override
 	public boolean containsAlpha() {
-		return borderID != ResLoader.FILLED;
+		return borderID != ResLoader.TileTypes.FILLED.ordinal();
 	}
 
 	@Override

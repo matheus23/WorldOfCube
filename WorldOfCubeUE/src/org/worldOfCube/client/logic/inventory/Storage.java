@@ -28,8 +28,8 @@ import org.worldOfCube.client.res.Sprite;
 
 public class Storage {
 
-	private Sprite slotSprite = ResLoader.get(ResLoader.GUI_INV_SLOT, ResLoader.GUI_INV_SLOT_UNSEL);
-	private Sprite slotSelectedSprite = ResLoader.get(ResLoader.GUI_INV_SLOT, ResLoader.GUI_INV_SLOT_SEL);
+	private Sprite slotSprite = ResLoader.get(ResLoader.Sheets.GUI_INV_SLOT, ResLoader.Slots.UNSELECTED.ordinal());
+	private Sprite slotSelectedSprite = ResLoader.get(ResLoader.Sheets.GUI_INV_SLOT, ResLoader.Slots.SELECTED.ordinal());
 
 	private ItemStack[][] slots;
 	private float offsetx;
@@ -42,7 +42,7 @@ public class Storage {
 		slots = new ItemStack[width][height];
 		this.offsetx = offsetx;
 		this.offsety = offsety;
-		rect = new Rectangle(offsetx, offsety, width*ResLoader.GUI_INV_SLOT_SIZE, height*ResLoader.GUI_INV_SLOT_SIZE);
+		rect = new Rectangle(offsetx, offsety, width*ResLoader.INV_SLOT_SIZE, height*ResLoader.INV_SLOT_SIZE);
 	}
 
 	public void tick(boolean enfolded) {
@@ -50,8 +50,8 @@ public class Storage {
 			int mx = WrappedMouse.getX();
 			int my = WrappedMouse.getY();
 			if (rect.contains(mx, my)) {
-				selectSlot((int)((mx-offsetx)/ResLoader.GUI_INV_SLOT_SIZE),
-						(int)((my-offsety)/ResLoader.GUI_INV_SLOT_SIZE));
+				selectSlot((int)((mx-offsetx)/ResLoader.INV_SLOT_SIZE),
+						(int)((my-offsety)/ResLoader.INV_SLOT_SIZE));
 			}
 		}
 	}
@@ -66,21 +66,21 @@ public class Storage {
 			for (int y = 0; y < slots[x].length; y++) {
 				if (x == selx && y == sely) {
 					slotSelectedSprite.bindAndRender(
-							offsetx+x*ResLoader.GUI_INV_SLOT_SIZE,
-							offsety+y*ResLoader.GUI_INV_SLOT_SIZE,
-							ResLoader.GUI_INV_SLOT_SIZE,
-							ResLoader.GUI_INV_SLOT_SIZE);
+							offsetx+x*ResLoader.INV_SLOT_SIZE,
+							offsety+y*ResLoader.INV_SLOT_SIZE,
+							ResLoader.INV_SLOT_SIZE,
+							ResLoader.INV_SLOT_SIZE);
 				} else {
 					slotSprite.bindAndRender(
-							offsetx+x*ResLoader.GUI_INV_SLOT_SIZE,
-							offsety+y*ResLoader.GUI_INV_SLOT_SIZE,
-							ResLoader.GUI_INV_SLOT_SIZE,
-							ResLoader.GUI_INV_SLOT_SIZE);
+							offsetx+x*ResLoader.INV_SLOT_SIZE,
+							offsety+y*ResLoader.INV_SLOT_SIZE,
+							ResLoader.INV_SLOT_SIZE,
+							ResLoader.INV_SLOT_SIZE);
 				}
 				if (slots[x][y] != null) {
 					slots[x][y].render(
-						offsetx+x*ResLoader.GUI_INV_SLOT_SIZE + ResLoader.GUI_INV_SLOT_SIZE/2,
-						offsety+y*ResLoader.GUI_INV_SLOT_SIZE + ResLoader.GUI_INV_SLOT_SIZE/2);
+						offsetx+x*ResLoader.INV_SLOT_SIZE + ResLoader.INV_SLOT_SIZE/2,
+						offsety+y*ResLoader.INV_SLOT_SIZE + ResLoader.INV_SLOT_SIZE/2);
 				}
 			}
 		}

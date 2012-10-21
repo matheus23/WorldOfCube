@@ -52,13 +52,15 @@ public class ItemSlot {
 	}
 
 	public void render(float x, float y) {
-		ResLoader.get(ResLoader.GUI_INV_SLOT, selected ? ResLoader.GUI_INV_SLOT_SEL : ResLoader.GUI_INV_SLOT_UNSEL)
+		ResLoader.get(ResLoader.Sheets.GUI_INV_SLOT, selected ?
+				ResLoader.Slots.SELECTED.ordinal() :
+				ResLoader.Slots.UNSELECTED.ordinal())
 			.bindAndRender(x, y,
-					ResLoader.GUI_INV_SLOT_SIZE,
-					ResLoader.GUI_INV_SLOT_SIZE);
+					ResLoader.INV_SLOT_SIZE,
+					ResLoader.INV_SLOT_SIZE);
 		if (stack != null) {
-			stack.render(x+ResLoader.GUI_INV_SLOT_SIZE/2,
-					y+ResLoader.GUI_INV_SLOT_SIZE/2);
+			stack.render(x+ResLoader.INV_SLOT_SIZE/2,
+					y+ResLoader.INV_SLOT_SIZE/2);
 		}
 	}
 

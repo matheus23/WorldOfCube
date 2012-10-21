@@ -44,17 +44,17 @@ public class EntityPlayer extends Entity {
 	private boolean onBottom;
 	private boolean moving;
 	private int dir;
-	private Bone legFront = new Bone(ResLoader.get(ResLoader.PLAYER_SHEET, ResLoader.LEG_FRONT),
+	private Bone legFront = new Bone(ResLoader.get(ResLoader.Sheets.PLAYER_SHEET, ResLoader.PlayerParts.LEG_FRONT.ordinal()),
 			10f, 4f, 2f, 9f, 14f);
-	private Bone legBack = new Bone(ResLoader.get(ResLoader.PLAYER_SHEET, ResLoader.LEG_BACK),
+	private Bone legBack = new Bone(ResLoader.get(ResLoader.Sheets.PLAYER_SHEET, ResLoader.PlayerParts.LEG_BACK.ordinal()),
 			10f, 6f, 2f, 9f, 14f);
 	private Bone toPelvis = new Bone(null,
 			10f, 0f, 0f, 0f, 0f, legBack, legFront);
-	private Bone body = new Bone(ResLoader.get(ResLoader.PLAYER_SHEET, ResLoader.BODY),
+	private Bone body = new Bone(ResLoader.get(ResLoader.Sheets.PLAYER_SHEET, ResLoader.PlayerParts.BODY.ordinal()),
 			4f, 7f, 4f, 13f, 18f, toPelvis);
-	private Bone arm = new Bone(ResLoader.get(ResLoader.PLAYER_SHEET, ResLoader.ARM),
+	private Bone arm = new Bone(ResLoader.get(ResLoader.Sheets.PLAYER_SHEET, ResLoader.PlayerParts.ARM.ordinal()),
 			11f, 3f, 2f, 7f, 13f);
-	private Bone head = new Bone(ResLoader.get(ResLoader.PLAYER_SHEET, ResLoader.HEAD),
+	private Bone head = new Bone(ResLoader.get(ResLoader.Sheets.PLAYER_SHEET, ResLoader.PlayerParts.HEAD.ordinal()),
 			8f, 15f, 25f, 26f, 29f, body, arm);
 	private Skeleton skel = new Skeleton(0, 0, head);
 
