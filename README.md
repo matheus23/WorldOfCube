@@ -6,7 +6,7 @@
 ## What is this?
 
 It's a game similar to Minecraft in 2D, Terraria or Starbound.
-It was made using the LightWeight Java OpenGL Gaming Library ([LWJGL](http://lwjgl.org))
+It was made using the <strong>LightWeight Java OpenGL Gaming Library</strong> ([LWJGL](http://lwjgl.org))
 
 See for yourself:
 ![Screenshot][Image1]
